@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}تسجيل الدخول - تجارة{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="card">
+        <div class="logo">
+            <h1>تجارة</h1>
+            <p>سجل دخولك إلى متجرك</p>
+        </div>
+
+        {% if error %}
+        <div class="alert alert-error">
+            رقم الهاتف أو اسم المتجر غير صحيح
+        </div>
+        {% endif %}
+
+        <form method="POST" action="/login" id="loginForm">
+            <div class="form-group">
+                <label for="mobile_number">رقم الهاتف</label>
+                <input type="tel" id="mobile_number" name="mobile_number" placeholder="0599123456" required
+                    pattern="[0-9]{10}" title="يجب أن يكون رقم الهاتف 10 أرقام">
+            </div>
+
+            <div class="form-group">
+                <label for="store_name">اسم المتجر</label>
+                <div class="domain-input-group">
+                    <span class="domain-suffix">.tejara.ps</span>
+                    <input type="text" id="store_name" name="store_name" placeholder="متجري" required>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">إرسال رمز التحقق</button>
+        </form>
+
+        <div class="link-text">
+            ليس لديك حساب؟ <a href="/register">إنشاء حساب جديد</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.getElementById('loginForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // reCAPTCHA v3 - get token and submit
+        grecaptcha.ready(function () {
+            grecaptcha.execute('{{ RECAPTCHA_SITE_KEY }}', { action: 'login' }).then(function (token) {
+                // Add token to form
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'g-recaptcha-response';
+                input.value = token;
+                document.getElementById('loginForm').appendChild(input);
+
+                // Submit form
+                document.getElementById('loginForm').submit();
+            });
+        });
+    });
+</script>
+{% endblock %}

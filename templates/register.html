@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}التسجيل - تجارة{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="card">
+        <div class="logo">
+            <h1>تجارة</h1>
+            <p>سجل متجرك الإلكتروني الآن</p>
+        </div>
+
+        {% if error %}
+        <div class="alert alert-error">
+            {{ error }}
+        </div>
+        {% endif %}
+
+        {% if success %}
+        <div class="alert alert-success">
+            {{ success }}
+        </div>
+        {% endif %}
+
+        <form method="POST" action="/register" id="registerForm">
+            <div class="form-group">
+                <label for="store_name">اسم المتجر</label>
+                <div class="domain-input-group">
+                    <span class="domain-suffix">.tejara.ps</span>
+                    <input type="text" id="store_name" name="store_name" placeholder="متجري" required
+                        pattern="[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]|[a-zA-Z0-9]"
+                        title="يجب أن يحتوي على أحرف إنجليزية وأرقام وشرطات فقط">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="owner_name">الاسم الكامل للمالك</label>
+                <input type="text" id="owner_name" name="owner_name" placeholder="أحمد محمد" required>
+            </div>
+
+            <div class="form-group">
+                <label for="mobile_number">رقم الهاتف</label>
+                <input type="tel" id="mobile_number" name="mobile_number" placeholder="0599123456" required
+                    pattern="[0-9]{10}" title="يجب أن يكون رقم الهاتف 10 أرقام">
+            </div>
+
+            <div class="form-group">
+                <label for="facebook_page">صفحة الفيسبوك</label>
+                <input type="url" id="facebook_page" name="facebook_page" placeholder="https://facebook.com/mystore"
+                    required>
+            </div>
+
+            <button type="submit" class="btn btn-primary" id="submitBtn">إنشاء حساب</button>
+        </form>
+
+        <div class="link-text">
+            لديك حساب بالفعل؟ <a href="/login">تسجيل الدخول</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Client-side validation for store name
+    document.getElementById('registerForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const storeName = document.getElementById('store_name').value;
+        const pattern = /^[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]$|^[a-zA-Z0-9]$/;
+
+        if (!pattern.test(storeName)) {
+            alert('اسم المتجر يجب أن يحتوي على أحرف إنجليزية وأرقام وشرطات فقط');
+            return;
+        }
+
+        // reCAPTCHA v3 - get token and submit
+        grecaptcha.ready(function () {
+            grecaptcha.execute('{{ RECAPTCHA_SITE_KEY }}', { action: 'register' }).then(function (token) {
+                // Add token to form
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'g-recaptcha-response';
+                input.value = token;
+                document.getElementById('registerForm').appendChild(input);
+
+                // Submit form
+                document.getElementById('registerForm').submit();
+            });
+        });
+    });
+</script>
+{% endblock %}

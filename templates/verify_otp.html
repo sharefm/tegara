@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}التحقق من الرمز - تجارة{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="card">
+        <div class="logo">
+            <h1>تجارة</h1>
+            <p>أدخل رمز التحقق</p>
+        </div>
+
+        {% if otp_code %}
+        <div class="otp-display">
+            <p>تم إرسال رمز التحقق إلى رقم {{ mobile_number }}</p>
+            <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: 8px;">
+                (للتجربة فقط - الرمز معروض أدناه)
+            </p>
+            <div class="otp-code">{{ otp_code }}</div>
+        </div>
+        {% endif %}
+
+        <form method="POST" action="/verify-otp">
+            <div class="form-group">
+                <label for="otp_code">رمز التحقق (6 أرقام)</label>
+                <input type="text" id="otp_code" name="otp_code" placeholder="123456" required pattern="[0-9]{6}"
+                    maxlength="6" class="otp-input" title="يجب أن يكون الرمز 6 أرقام" autocomplete="off">
+            </div>
+
+            <button type="submit" class="btn btn-primary">تحقق</button>
+        </form>
+
+        <div class="link-text">
+            <a href="/login">العودة لتسجيل الدخول</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Auto-focus on OTP input
+    document.getElementById('otp_code').focus();
+</script>
+{% endblock %}
