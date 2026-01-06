@@ -27,6 +27,21 @@ services:
     networks:
       - tegara-network
 
+  nginx:
+    image: nginx:alpine
+    container_name: nginx-prod
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - web
+    restart: always
+    networks:
+      - tegara-network
+
   portainer:
     image: portainer/portainer-ce:latest
     container_name: portainer-prod
