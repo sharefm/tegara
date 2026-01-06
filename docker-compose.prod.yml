@@ -7,9 +7,11 @@ services:
       dockerfile: Dockerfile
     container_name: tegara-prod
     ports:
-      - "8080:8000"
+      - "8000:8000"
     volumes:
-      # Only persist database, no source code mounting
+      # Mount source code for live reloading
+      - ./:/app
+      # Persist database
       - ./data:/app/data
     env_file:
       - .env.prod
