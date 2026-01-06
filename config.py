@@ -1,13 +1,22 @@
-# Configuration for reCAPTCHA v3
+# Configuration for reCAPTCHA v3 and Application Settings
 # Get your keys from: https://www.google.com/recaptcha/admin
 
-# IMPORTANT: Replace with your actual keys for production use
+import os
+from pathlib import Path
+
+# IMPORTANT: All sensitive values should be set via environment variables
 
 # reCAPTCHA v3 Site Key (public - used in HTML)
-RECAPTCHA_SITE_KEY = "6Let6z4sAAAAAPsuti-q9JOTLaYOdsVchMGoHvz7"  # site key from Google
+RECAPTCHA_SITE_KEY = os.getenv(
+    "RECAPTCHA_SITE_KEY",
+    "6Let6z4sAAAAAPsuti-q9JOTLaYOdsVchMGoHvz7"  # Default for development
+)
 
 # reCAPTCHA v3 Secret Key (private - used in backend)
-RECAPTCHA_SECRET_KEY = "6Let6z4sAAAAANMtNTaaMgscktEdkZ5d4Kvd99gh"  # secret key from Google
+RECAPTCHA_SECRET_KEY = os.getenv(
+    "RECAPTCHA_SECRET_KEY",
+    "6Let6z4sAAAAANMtNTaaMgscktEdkZ5d4Kvd99gh"  # Default for development
+)
 
 # reCAPTCHA v3 uses score-based verification (0.0 to 1.0)
 # Score threshold is set to 0.5 by default in main.py
@@ -15,3 +24,20 @@ RECAPTCHA_SECRET_KEY = "6Let6z4sAAAAANMtNTaaMgscktEdkZ5d4Kvd99gh"  # secret key 
 
 # reCAPTCHA Verification URL
 RECAPTCHA_VERIFY_URL = "https://www.google.com/recaptcha/api/siteverify"
+
+# Session Secret Key
+SESSION_SECRET_KEY = os.getenv(
+    "SESSION_SECRET_KEY",
+    "dev-secret-key-change-in-production"  # Default for development
+)
+
+# Database Configuration
+DATABASE_PATH = os.getenv(
+    "DATABASE_PATH",
+    "data/tejara.db"  # Default for development (data subdirectory)
+)
+
+# Environment
+ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
+DEBUG = os.getenv("DEBUG", "true").lower() == "true"
+

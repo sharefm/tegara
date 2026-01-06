@@ -11,12 +11,12 @@ from datetime import datetime, timedelta
 
 from database import init_db, get_db
 from models import Store, OTPSession
-from config import RECAPTCHA_SITE_KEY, RECAPTCHA_SECRET_KEY, RECAPTCHA_VERIFY_URL
+from config import RECAPTCHA_SITE_KEY, RECAPTCHA_SECRET_KEY, RECAPTCHA_VERIFY_URL, SESSION_SECRET_KEY
 
 app = FastAPI()
 
-# Add session middleware
-app.add_middleware(SessionMiddleware, secret_key="your-secret-key-change-in-production")
+# Add session middleware with secret from config
+app.add_middleware(SessionMiddleware, secret_key=SESSION_SECRET_KEY)
 
 # Mount static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -340,3 +340,9 @@ async def update_profile(
 async def logout(request: Request):
     request.session.clear()
     return RedirectResponse(url="/login")
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for Docker and monitoring"""
+    return {"status": "healthy", "service": "tegara"}
+
