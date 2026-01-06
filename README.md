@@ -16,7 +16,7 @@ A modern web application for registering and managing web stores with Arabic int
 
 This repository uses separate branches for different environments:
 - **DEV** - Development environment (port 8000)
-- **PROD** - Production environment (port 8080)
+- **PROD** - Production environment (port 8000)
 
 See [BRANCH_STRATEGY.md](BRANCH_STRATEGY.md) for detailed workflow.
 
@@ -25,7 +25,7 @@ See [BRANCH_STRATEGY.md](BRANCH_STRATEGY.md) for detailed workflow.
 **Development:**
 ```bash
 git checkout DEV
-docker-compose up -d
+docker-compose -f docker-compose.dev.yml up -d
 # Access at http://localhost:8000
 # Portainer at https://localhost:9443
 ```
@@ -36,7 +36,7 @@ git checkout PROD
 cp .env.prod.example .env.prod
 # Edit .env.prod with production secrets
 docker-compose -f docker-compose.prod.yml up -d
-# Access at http://localhost:8080
+# Access at http://localhost:8000
 ```
 
 See [DEPLOYMENT.md](DEPLOYMENT.md) for comprehensive deployment guide.
@@ -94,7 +94,7 @@ Open your browser and navigate to: **http://localhost:8000**
 ├── config.py                  # Configuration management
 ├── requirements.txt           # Python dependencies
 ├── Dockerfile                 # Docker image definition
-├── docker-compose.yml         # Dev environment
+├── docker-compose.dev.yml     # Dev environment
 ├── docker-compose.prod.yml    # Prod environment
 ├── .env.dev                   # Dev environment variables
 ├── .env.prod.example          # Prod environment template
