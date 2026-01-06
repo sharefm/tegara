@@ -12,6 +12,37 @@ A modern web application for registering and managing web stores with Arabic int
 
 ## Quick Start
 
+### Branch Strategy
+
+This repository uses separate branches for different environments:
+- **DEV** - Development environment (port 8000)
+- **PROD** - Production environment (port 8080)
+
+See [BRANCH_STRATEGY.md](BRANCH_STRATEGY.md) for detailed workflow.
+
+### Docker Deployment (Recommended)
+
+**Development:**
+```bash
+git checkout DEV
+docker-compose up -d
+# Access at http://localhost:8000
+# Portainer at https://localhost:9443
+```
+
+**Production:**
+```bash
+git checkout PROD
+cp .env.prod.example .env.prod
+# Edit .env.prod with production secrets
+docker-compose -f docker-compose.prod.yml up -d
+# Access at http://localhost:8080
+```
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for comprehensive deployment guide.
+
+### Manual Setup (Alternative)
+
 ### 1. Install Dependencies
 
 ```bash
@@ -57,19 +88,35 @@ Open your browser and navigate to: **http://localhost:8000**
 
 ```
 .
-├── main.py              # FastAPI application
-├── models.py            # Database models
-├── database.py          # Database configuration
-├── requirements.txt     # Python dependencies
-├── templates/           # Jinja2 templates
+├── main.py                    # FastAPI application
+├── models.py                  # Database models
+├── database.py                # Database configuration
+├── config.py                  # Configuration management
+├── requirements.txt           # Python dependencies
+├── Dockerfile                 # Docker image definition
+├── docker-compose.yml         # Dev environment
+├── docker-compose.prod.yml    # Prod environment
+├── .env.dev                   # Dev environment variables
+├── .env.prod.example          # Prod environment template
+├── DEPLOYMENT.md              # Deployment guide
+├── BRANCH_STRATEGY.md         # Branch workflow guide
+├── RECAPTCHA_SETUP.md         # reCAPTCHA setup guide
+├── templates/                 # Jinja2 templates
 │   ├── base.html
+│   ├── landing.html
 │   ├── register.html
 │   ├── login.html
 │   ├── verify_otp.html
 │   └── profile.html
 └── static/
-    └── style.css        # Styling
+    └── style.css              # Styling
 ```
+
+## Documentation
+
+- **[DEPLOYMENT.md](DEPLOYMENT.md)** - Complete Docker deployment guide
+- **[BRANCH_STRATEGY.md](BRANCH_STRATEGY.md)** - Branch workflow and deployment strategy
+- **[RECAPTCHA_SETUP.md](RECAPTCHA_SETUP.md)** - reCAPTCHA v3 configuration
 
 ## Notes
 
@@ -77,7 +124,9 @@ Open your browser and navigate to: **http://localhost:8000**
 - In production, integrate with an SMS gateway (Twilio, Nexmo, etc.)
 - All form fields are mandatory
 - Store names must be alphanumeric with hyphens only
+- **Production secrets**: Never commit `.env.prod` to git
 
 ## License
 
 This is a demo application for educational purposes.
+
