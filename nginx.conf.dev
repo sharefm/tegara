@@ -39,8 +39,8 @@ http {
         server_name _;
         
         # SSL certificate paths (will be mounted from volume)
-        ssl_certificate /etc/nginx/ssl/cert.pem;
-        ssl_certificate_key /etc/nginx/ssl/key.pem;
+        ssl_certificate /etc/nginx/ssl/fullchain.pem;
+        ssl_certificate_key /etc/nginx/ssl/privkey.pem;
         
         # SSL configuration
         ssl_protocols TLSv1.2 TLSv1.3;
