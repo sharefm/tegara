@@ -8,15 +8,19 @@ This repository uses a branch-based deployment strategy to separate development 
 - **Purpose**: Development environment
 - **Use Case**: Active development, testing, and experimentation
 - **Deployment**: Development server
-- **Docker Compose**: `docker-compose.yml`
+- **Docker Compose**: `docker-compose.yml` (dev-only)
+- **Environment**: `.env.dev` (dev-only)
 - **Port**: 8000
+- **Files**: Contains only development-related configuration
 
 ### PROD Branch
 - **Purpose**: Production environment
 - **Use Case**: Stable, production-ready code
 - **Deployment**: Production server
-- **Docker Compose**: `docker-compose.prod.yml`
+- **Docker Compose**: `docker-compose.prod.yml` (prod-only)
+- **Environment**: `.env.prod.example` (prod-only)
 - **Port**: 8080
+- **Files**: Contains only production-related configuration
 
 ### master Branch
 - **Purpose**: Legacy/initial setup
@@ -78,22 +82,28 @@ This repository uses a branch-based deployment strategy to separate development 
 ## Environment Configuration
 
 ### Development (DEV branch)
-- Environment file: `.env.dev` (tracked in git)
+- Environment file: `.env.dev` (tracked in git, dev branch only)
+- Docker Compose: `docker-compose.yml` (dev branch only)
 - Configuration: Development reCAPTCHA keys, debug enabled
 - Database: `data/tejara.db`
 
 ### Production (PROD branch)
 - Environment file: `.env.prod` (NOT tracked in git)
+- Environment template: `.env.prod.example` (prod branch only)
+- Docker Compose: `docker-compose.prod.yml` (prod branch only)
 - Configuration: Production reCAPTCHA keys, debug disabled
 - Database: `data/tejara.db`
 - **Important**: Create `.env.prod` from `.env.prod.example` on production server
 
+> [!NOTE]
+> Each branch contains only its own environment-specific files. DEV branch does not have production files, and PROD branch does not have development files.
+
 ## Quick Reference
 
-| Branch | Port | Docker Compose File | Environment File | Purpose |
-|--------|------|-------------------|------------------|---------|
-| DEV | 8000 | `docker-compose.yml` | `.env.dev` | Development |
-| PROD | 8080 | `docker-compose.prod.yml` | `.env.prod` | Production |
+| Branch | Port | Docker Compose File | Environment File | Files Included |
+|--------|------|-------------------|------------------|----------------|
+| DEV | 8000 | `docker-compose.yml` | `.env.dev` | Dev files only |
+| PROD | 8080 | `docker-compose.prod.yml` | `.env.prod.example` | Prod files only |
 
 ## Portainer Access
 
