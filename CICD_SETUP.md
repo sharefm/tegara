@@ -1,56 +1,81 @@
 # GitHub Actions CI/CD Setup
 
-This document explains the GitHub Actions CI/CD pipeline for the Tegara project.
+This document explains the GitHub Actions CI/CD pipelines for the Tegara project.
 
 ## Overview
 
-The CI/CD pipeline automatically builds and deploys Docker images to Docker Hub whenever code is pushed to the DEV branch.
+The project has two automated CI/CD pipelines:
+- **DEV Pipeline**: Builds and deploys development images
+- **PROD Pipeline**: Builds and deploys production images
 
-## Pipeline File
+Both pipelines automatically build and push Docker images to Docker Hub.
 
-**Location**: `.github/workflows/cicd-dev.yaml`
+## Pipeline Files
 
-## Workflow Details
+| Branch | Workflow File | Purpose |
+|--------|--------------|---------|
+| DEV | `.github/workflows/cicd-dev.yaml` | Development builds |
+| PROD | `.github/workflows/cicd-prod.yaml` | Production builds |
+
+## DEV Pipeline
 
 ### Trigger Events
+- Push to DEV branch
+- Pull request to DEV branch
 
-The pipeline runs on:
-- **Push** to DEV branch
-- **Pull Request** to DEV branch
+### Image Tags
+- `sharefdnskube/tejara:latest`
+- `sharefdnskube/tejara:YYYYMMDDHHmm` (e.g., `202601061545`)
 
-### What It Does
+### Usage
+```bash
+# Pull latest dev build
+docker pull sharefdnskube/tejara:latest
 
-1. **Checkout Code**: Retrieves the latest code from the repository
-2. **Set up Docker Buildx**: Configures advanced Docker build features
-3. **Login to Docker Hub**: Authenticates using GitHub secrets
-4. **Generate Timestamp**: Creates a timestamp in format `YYYYMMDDHHmm`
-5. **Build Docker Image**: Builds the image using the Dockerfile
-6. **Push to Docker Hub**: Pushes with two tags:
-   - `sharefdnskube/tejara:latest` - Always points to the latest build
-   - `sharefdnskube/tejara:YYYYMMDDHHmm` - Specific timestamp version
+# Pull specific dev version
+docker pull sharefdnskube/tejara:202601061545
+```
 
-### Docker Hub Repository
+## PROD Pipeline
+
+### Trigger Events
+- Push to PROD branch
+- Pull request to PROD branch
+
+### Image Tags
+- `sharefdnskube/tejara:prod`
+- `sharefdnskube/tejara:prod-YYYYMMDDHHmm` (e.g., `prod-202601061545`)
+
+### Usage
+```bash
+# Pull latest prod build
+docker pull sharefdnskube/tejara:prod
+
+# Pull specific prod version
+docker pull sharefdnskube/tejara:prod-202601061545
+```
+
+## Docker Hub Repository
 
 - **Username**: `sharefdnskube`
 - **Repository**: `sharefdnskube/tejara`
-- **Tags**: 
-  - `latest` - Latest build from DEV branch
-  - `YYYYMMDDHHmm` - Timestamped versions (e.g., `202601061545`)
+- **All Tags**:
+  - `latest` - Latest DEV build
+  - `YYYYMMDDHHmm` - Timestamped DEV builds
+  - `prod` - Latest PROD build
+  - `prod-YYYYMMDDHHmm` - Timestamped PROD builds
 
 ## GitHub Secrets Required
 
-You need to configure the following secret in your GitHub repository:
+Configure this secret in your GitHub repository settings:
 
 ### Setting Up the Secret
 
-1. Go to your GitHub repository: `https://github.com/sharefm/tegara`
-2. Navigate to **Settings** → **Secrets and variables** → **Actions**
-3. Click **New repository secret**
-4. Add the following secret:
-
-| Secret Name | Value | Description |
-|-------------|-------|-------------|
-| `DOCKER_SECRET` | Your Docker Hub password/token | Used to authenticate with Docker Hub |
+1. Go to: `https://github.com/sharefm/tegara/settings/secrets/actions`
+2. Click **New repository secret**
+3. Add:
+   - **Name**: `DOCKER_SECRET`
+   - **Value**: Your Docker Hub password/token for user `sharefdnskube`
 
 ### How to Get Docker Hub Token
 
@@ -64,84 +89,88 @@ You need to configure the following secret in your GitHub repository:
 
 ### Build Caching
 
-The pipeline uses Docker layer caching to speed up builds:
-- **Cache source**: `sharefdnskube/tejara:buildcache`
-- **Cache mode**: `max` (caches all layers)
+Both pipelines use Docker layer caching:
+- **DEV cache**: `sharefdnskube/tejara:buildcache`
+- **PROD cache**: `sharefdnskube/tejara:buildcache-prod`
 
 This significantly reduces build times for subsequent runs.
 
-### Image Tags
+### Automatic Tagging
 
 Every successful build creates two tags:
 
-1. **latest**: 
-   - Always overwritten with the newest build
-   - Use for development/testing
-   - Pull with: `docker pull sharefdnskube/tejara:latest`
+**DEV Branch:**
+- `latest` - Always the newest dev build
+- `YYYYMMDDHHmm` - Immutable timestamp version
 
-2. **Timestamp** (e.g., `202601061545`):
-   - Immutable version for that specific build
-   - Use for rollbacks or specific versions
-   - Pull with: `docker pull sharefdnskube/tejara:202601061545`
+**PROD Branch:**
+- `prod` - Always the newest prod build
+- `prod-YYYYMMDDHHmm` - Immutable timestamp version
 
-## Usage Examples
+## Deployment Workflow
 
-### Pull Latest Image
+### Development Deployment
 
-```bash
-docker pull sharefdnskube/tejara:latest
-```
+1. Make changes in DEV branch
+2. Push to GitHub
+3. Pipeline automatically builds and pushes
+4. Deploy using:
+   ```bash
+   docker pull sharefdnskube/tejara:latest
+   docker run -d -p 8000:8000 sharefdnskube/tejara:latest
+   ```
 
-### Pull Specific Version
+### Production Deployment
 
-```bash
-docker pull sharefdnskube/tejara:202601061545
-```
+1. Merge DEV to PROD when ready
+2. Push PROD branch to GitHub
+3. Pipeline automatically builds and pushes
+4. Deploy using:
+   ```bash
+   docker pull sharefdnskube/tejara:prod
+   docker run -d -p 8000:8000 sharefdnskube/tejara:prod
+   ```
 
-### Run Container from Docker Hub
+## Using with docker-compose
 
-```bash
-# Using latest
-docker run -d -p 8000:8000 sharefdnskube/tejara:latest
+### Development
 
-# Using specific version
-docker run -d -p 8000:8000 sharefdnskube/tejara:202601061545
-```
-
-### Update docker-compose to Use Docker Hub Image
-
-Instead of building locally, you can use the pre-built image:
-
+Update `docker-compose.dev.yml`:
 ```yaml
 services:
   web:
-    image: sharefdnskube/tejara:latest  # or specific timestamp
+    image: sharefdnskube/tejara:latest
     # Remove 'build' section
     container_name: tegara-dev
-    ports:
-      - "8000:8000"
     # ... rest of configuration
 ```
 
-## Monitoring Pipeline
+### Production
+
+Update `docker-compose.prod.yml`:
+```yaml
+services:
+  web:
+    image: sharefdnskube/tejara:prod
+    # Remove 'build' section
+    container_name: tegara-prod
+    # ... rest of configuration
+```
+
+## Monitoring Pipelines
 
 ### View Pipeline Status
 
-1. Go to your repository on GitHub
-2. Click on the **Actions** tab
-3. You'll see all workflow runs
+1. Go to: `https://github.com/sharefm/tegara/actions`
+2. See all workflow runs for both DEV and PROD
 
-### Pipeline Runs On
+### Build Status Badges
 
-- Every push to DEV branch
-- Every pull request to DEV branch
-
-### Build Status Badge (Optional)
-
-Add this to your README.md to show build status:
+Add to README.md:
 
 ```markdown
 ![CI/CD DEV](https://github.com/sharefm/tegara/actions/workflows/cicd-dev.yaml/badge.svg?branch=DEV)
+![CI/CD PROD](https://github.com/sharefm/tegara/actions/workflows/cicd-prod.yaml/badge.svg?branch=PROD)
 ```
 
 ## Troubleshooting
@@ -165,47 +194,47 @@ Add this to your README.md to show build status:
 3. Ensure all dependencies are in requirements.txt
 4. Test build locally: `docker build -t test .`
 
-### Image Not Found on Docker Hub
+### Wrong Image Pulled
 
-**Issue**: Can't pull the image
+**Issue**: Getting DEV image instead of PROD
 
 **Solution**:
-1. Check if the pipeline completed successfully
-2. Verify the repository is public or you're logged in
-3. Wait a few minutes for Docker Hub to sync
+- Use explicit tags: `prod` for production, `latest` for development
+- Check which branch triggered the build in Actions tab
 
 ## Best Practices
 
-1. **Always review the Actions log** after pushing to ensure the build succeeded
-2. **Use timestamp tags** for production deployments (immutable)
-3. **Use latest tag** for development and testing only
-4. **Keep secrets secure** - never commit Docker Hub credentials
-5. **Monitor build times** - optimize Dockerfile if builds are slow
+### Development
+1. Use `latest` tag for development and testing
+2. Review Actions log after each push
+3. Test locally before pushing
 
-## Next Steps
+### Production
+1. **Always use `prod` tag** for production deployments
+2. **Use timestamped tags** (e.g., `prod-202601061545`) for specific versions
+3. **Never use `latest`** in production
+4. Keep track of deployed versions
+5. Test in DEV before merging to PROD
 
-### For Production Branch
+### Rollback Strategy
 
-Consider creating a similar pipeline for the PROD branch:
-- File: `.github/workflows/cicd-prod.yaml`
-- Trigger: Push to PROD branch
-- Tag: `sharefdnskube/tejara:prod-YYYYMMDDHHmm`
-- Additional: Manual approval step before deployment
+If production deployment fails:
 
-### Enhancements
+```bash
+# Find previous working version in Actions history
+docker pull sharefdnskube/tejara:prod-202601061530
 
-- Add automated testing before build
-- Add security scanning (Trivy, Snyk)
-- Add notifications (Slack, Discord)
-- Add deployment to Kubernetes/cloud platform
-- Add rollback mechanism
+# Deploy the previous version
+docker run -d -p 8000:8000 sharefdnskube/tejara:prod-202601061530
+```
 
 ## Summary
 
-✅ **Automated builds** on every DEV push  
-✅ **Docker Hub integration** with dual tagging  
+✅ **Two automated pipelines** (DEV and PROD)  
+✅ **Automatic builds** on every push  
+✅ **Docker Hub integration** with environment-specific tagging  
 ✅ **Build caching** for faster builds  
 ✅ **Version tracking** with timestamps  
 ✅ **Easy rollbacks** with immutable tags  
 
-Your CI/CD pipeline is now active and will automatically build and push images whenever you push to the DEV branch!
+Your CI/CD pipelines are now active for both DEV and PROD branches!
