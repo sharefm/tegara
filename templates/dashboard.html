@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}لوحة التحكم - تجارة{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 800px;">
+    <div class="card">
+        <div class="dashboard-header">
+            <div class="logo">
+                <h1>تجارة</h1>
+                <p>مرحباً {{ user.mobile_number }}</p>
+            </div>
+            <a href="/logout" class="btn btn-secondary" style="width: auto; padding: 12px 24px;">تسجيل الخروج</a>
+        </div>
+
+        {% if request.query_params.get('success') == 'domain_added' %}
+        <div class="alert alert-success">
+            تم إضافة الدومين بنجاح!
+        </div>
+        {% elif request.query_params.get('success') == 'domain_deleted' %}
+        <div class="alert alert-success">
+            تم حذف الدومين بنجاح!
+        </div>
+        {% elif request.query_params.get('error') == 'domain_exists' %}
+        <div class="alert alert-error">
+            الدومين مستخدم بالفعل
+        </div>
+        {% elif request.query_params.get('error') == 'invalid_store_name' %}
+        <div class="alert alert-error">
+            اسم المتجر يجب أن يحتوي على أحرف إنجليزية وأرقام وشرطات فقط
+        </div>
+        {% elif request.query_params.get('error') == 'empty_domain' %}
+        <div class="alert alert-error">
+            يرجى إدخال الدومين
+        </div>
+        {% endif %}
+
+        <h2 style="margin-bottom: 20px; color: var(--text-dark);">إضافة دومين جديد</h2>
+
+        <form method="POST" action="/dashboard/add-domain" id="addDomainForm">
+            <div class="form-group">
+                <label>نوع الدومين</label>
+                <div class="radio-group">
+                    <div class="radio-option">
+                        <input type="radio" id="custom_domain" name="domain_type" value="custom">
+                        <label for="custom_domain">عندي دومين خاص</label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" id="temp_domain" name="domain_type" value="temporary" checked>
+                        <label for="temp_domain">استعمل دومين مؤقت</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group" id="custom_domain_field" style="display: none;">
+                <label for="custom_domain_input">الدومين الخاص</label>
+                <input type="text" id="custom_domain_input" name="custom_domain_input" placeholder="domain.ps">
+            </div>
+
+            <div class="form-group" id="temp_domain_field">
+                <label for="store_name">اسم المتجر</label>
+                <div class="domain-input-group">
+                    <span class="domain-suffix">.tejara.ps</span>
+                    <input type="text" id="store_name" name="store_name" placeholder="my-store"
+                        pattern="[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]|[a-zA-Z0-9]"
+                        title="يجب أن يحتوي على أحرف إنجليزية وأرقام وشرطات فقط">
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">إضافة دومين</button>
+        </form>
+
+        <hr style="margin: 40px 0; border: none; border-top: 1px solid var(--border-color);">
+
+        <h2 style="margin-bottom: 20px; color: var(--text-dark);">الدومينات الخاصة بك</h2>
+
+        {% if domains %}
+        <div class="domains-list">
+            {% for domain in domains %}
+            <div class="domain-item">
+                <div class="domain-info">
+                    <div class="domain-name">{{ domain.domain_name }}</div>
+                    <div class="domain-type">
+                        {% if domain.domain_type == 'custom' %}
+                        <span class="badge badge-custom">دومين خاص</span>
+                        {% else %}
+                        <span class="badge badge-temp">دومين مؤقت</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <form method="POST" action="/dashboard/delete-domain/{{ domain.id }}" style="display: inline;">
+                    <button type="submit" class="btn btn-delete"
+                        onclick="return confirm('هل أنت متأكد من حذف هذا الدومين؟')">حذف</button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            لا توجد دومينات بعد. قم بإضافة دومين جديد أعلاه.
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Toggle domain input fields based on radio selection
+    const customDomainRadio = document.getElementById('custom_domain');
+    const tempDomainRadio = document.getElementById('temp_domain');
+    const customDomainField = document.getElementById('custom_domain_field');
+    const tempDomainField = document.getElementById('temp_domain_field');
+    const customDomainInput = document.getElementById('custom_domain_input');
+    const storeNameInput = document.getElementById('store_name');
+
+    function toggleDomainFields() {
+        if (customDomainRadio.checked) {
+            customDomainField.style.display = 'block';
+            tempDomainField.style.display = 'none';
+            customDomainInput.required = true;
+            storeNameInput.required = false;
+        } else {
+            customDomainField.style.display = 'none';
+            tempDomainField.style.display = 'block';
+            customDomainInput.required = false;
+            storeNameInput.required = true;
+        }
+    }
+
+    customDomainRadio.addEventListener('change', toggleDomainFields);
+    tempDomainRadio.addEventListener('change', toggleDomainFields);
+
+    // Client-side validation
+    document.getElementById('addDomainForm').addEventListener('submit', function (e) {
+        const domainType = document.querySelector('input[name="domain_type"]:checked').value;
+
+        if (domainType === 'temporary') {
+            const storeName = document.getElementById('store_name').value;
+            const pattern = /^[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]$|^[a-zA-Z0-9]$/;
+
+            if (!pattern.test(storeName)) {
+                e.preventDefault();
+                alert('اسم المتجر يجب أن يحتوي على أحرف إنجليزية وأرقام وشرطات فقط');
+                return;
+            }
+        } else if (domainType === 'custom') {
+            const customDomain = document.getElementById('custom_domain_input').value;
+            if (!customDomain || customDomain.trim() === '') {
+                e.preventDefault();
+                alert('يرجى إدخال الدومين الخاص بك');
+                return;
+            }
+        }
+    });
+</script>
+{% endblock %}

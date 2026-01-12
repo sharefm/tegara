@@ -1,26 +1,39 @@
-from sqlalchemy import create_engine, Column, Integer, String, DateTime
+from sqlalchemy import create_engine, Column, Integer, String, DateTime, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, relationship
 from datetime import datetime
 
 Base = declarative_base()
 
-class Store(Base):
-    __tablename__ = "stores"
+class User(Base):
+    __tablename__ = "users"
     
     id = Column(Integer, primary_key=True, index=True)
-    store_name = Column(String, unique=True, index=True, nullable=False)
-    owner_name = Column(String, nullable=False)
-    mobile_number = Column(String, unique=True, index=True, nullable=False)
-    facebook_page = Column(String, nullable=True)
+    mobile_number = Column(String, unique=True, nullable=False, index=True)
+    password_hash = Column(String, nullable=False)
+    verified = Column(Integer, default=0)  # 0 = not verified, 1 = SMS verified
     created_at = Column(DateTime, default=datetime.utcnow)
+    
+    # Relationship to domains
+    domains = relationship("Domain", back_populates="user", cascade="all, delete-orphan")
+
+class Domain(Base):
+    __tablename__ = "domains"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    domain_name = Column(String, unique=True, nullable=False, index=True)
+    domain_type = Column(String, nullable=False)  # 'custom' or 'temporary'
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    # Relationship to user
+    user = relationship("User", back_populates="domains")
 
 class OTPSession(Base):
     __tablename__ = "otp_sessions"
     
     id = Column(Integer, primary_key=True, index=True)
-    mobile_number = Column(String, nullable=False)
-    store_name = Column(String, nullable=False)
+    mobile_number = Column(String, nullable=False, index=True)
     otp_code = Column(String, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     verified = Column(Integer, default=0)  # 0 = not verified, 1 = verified

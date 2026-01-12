@@ -27,7 +27,13 @@
         </div>
         {% endif %}
 
-        <form method="POST" action="/verify-otp">
+        {% if error %}
+        <div class="alert alert-error">
+            {{ error }}
+        </div>
+        {% endif %}
+
+        <form method="POST" action="/verify-sms">
             <div class="form-group">
                 <label for="otp_code">رمز التحقق (6 أرقام)</label>
                 <input type="text" id="otp_code" name="otp_code" placeholder="123456" required pattern="[0-9]{6}"
@@ -38,7 +44,7 @@
         </form>
 
         <div class="link-text">
-            <a href="/login">العودة لتسجيل الدخول</a>
+            <a href="/register">العودة للتسجيل</a>
         </div>
     </div>
 </div>

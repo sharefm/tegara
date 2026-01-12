@@ -4,14 +4,15 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from starlette.middleware.sessions import SessionMiddleware
+import bcrypt
 import random
 import re
 import requests
 from datetime import datetime, timedelta
 
 from database import init_db, get_db
-from models import Store, OTPSession
-from config import RECAPTCHA_SITE_KEY, RECAPTCHA_SECRET_KEY, RECAPTCHA_VERIFY_URL, SESSION_SECRET_KEY
+from models import User, Domain, OTPSession
+from config import RECAPTCHA_SITE_KEY, RECAPTCHA_SECRET_KEY, RECAPTCHA_VERIFY_URL, SESSION_SECRET_KEY, ENVIRONMENT
 
 app = FastAPI()
 
@@ -30,28 +31,48 @@ templates.env.globals['RECAPTCHA_SITE_KEY'] = RECAPTCHA_SITE_KEY
 # Initialize database
 init_db()
 
-# Helper function to validate store name pattern
-def validate_store_name(store_name: str) -> bool:
-    # Only allow alphanumeric and hyphens, must start with letter or number
+def hash_password(password: str) -> str:
+    """Hash a password using bcrypt"""
+    # Convert password to bytes and hash
+    password_bytes = password.encode('utf-8')
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(password_bytes, salt)
+    return hashed.decode('utf-8')
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    """Verify a password against its hash"""
+    password_bytes = plain_password.encode('utf-8')
+    hashed_bytes = hashed_password.encode('utf-8')
+    return bcrypt.checkpw(password_bytes, hashed_bytes)
+
+# Helper function to validate domain name pattern
+def validate_domain_name(domain_name: str) -> bool:
+    """Validate domain name (alphanumeric and hyphens only)"""
     pattern = r'^[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]$|^[a-zA-Z0-9]$'
-    return bool(re.match(pattern, store_name))
+    return bool(re.match(pattern, domain_name))
 
 # Helper function to generate OTP
 def generate_otp() -> str:
     return str(random.randint(100000, 999999))
 
+# Helper function to send SMS (placeholder for production)
+def send_sms(mobile_number: str, message: str) -> bool:
+    """Send SMS to mobile number"""
+    if ENVIRONMENT == "production":
+        print(f"[PRODUCTION] SMS would be sent to {mobile_number}: {message}")
+        return True
+    else:
+        print(f"[DEVELOPMENT] SMS simulation to {mobile_number}: {message}")
+        return True
+
 # Helper function to verify reCAPTCHA v3
 def verify_recaptcha(recaptcha_response: str, min_score: float = 0.5) -> bool:
-    """Verify reCAPTCHA v3 response with Google's API
+    """Verify reCAPTCHA v3 response with Google's API"""
+    # In development mode, bypass reCAPTCHA verification
+    if ENVIRONMENT == "development":
+        print(f"[DEVELOPMENT] reCAPTCHA verification bypassed")
+        return True
     
-    Args:
-        recaptcha_response: The token from the client
-        min_score: Minimum score threshold (0.0 to 1.0). Default 0.5
-                  0.0 = very likely a bot, 1.0 = very likely a human
-    
-    Returns:
-        True if verification succeeds and score >= min_score
-    """
     if not recaptcha_response:
         return False
     
@@ -64,21 +85,27 @@ def verify_recaptcha(recaptcha_response: str, min_score: float = 0.5) -> bool:
         response = requests.post(RECAPTCHA_VERIFY_URL, data=payload, timeout=5)
         result = response.json()
         
-        # reCAPTCHA v3 returns a score between 0.0 and 1.0
         success = result.get('success', False)
         score = result.get('score', 0.0)
         
         print(f"reCAPTCHA verification: success={success}, score={score}")
         
-        # For v3, check both success and score threshold
         return success and score >= min_score
     except Exception as e:
         print(f"reCAPTCHA verification error: {e}")
         return False
 
+# ============================================================================
+# ROUTES
+# ============================================================================
+
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
     return templates.TemplateResponse("landing.html", {"request": request})
+
+# ============================================================================
+# REGISTRATION FLOW
+# ============================================================================
 
 @app.get("/register", response_class=HTMLResponse)
 async def register_page(request: Request):
@@ -87,10 +114,9 @@ async def register_page(request: Request):
 @app.post("/register")
 async def register(
     request: Request,
-    store_name: str = Form(...),
-    owner_name: str = Form(...),
     mobile_number: str = Form(...),
-    facebook_page: str = Form(...),
+    password: str = Form(...),
+    confirm_password: str = Form(...),
     db: Session = Depends(get_db),
     g_recaptcha_response: str = Form(None, alias="g-recaptcha-response")
 ):
@@ -103,30 +129,30 @@ async def register(
                 "error": "يرجى إكمال التحقق من أنك لست روبوت"
             }
         )
-    # Validate store name
-    if not validate_store_name(store_name):
+    
+    # Validate passwords match
+    if password != confirm_password:
         return templates.TemplateResponse(
             "register.html",
             {
                 "request": request,
-                "error": "اسم المتجر يجب أن يحتوي على أحرف وأرقام وشرطات فقط"
+                "error": "كلمات المرور غير متطابقة"
             }
         )
     
-    # Check if store name already exists
-    existing_store = db.query(Store).filter(Store.store_name == store_name).first()
-    if existing_store:
+    # Validate password length
+    if len(password) < 8:
         return templates.TemplateResponse(
             "register.html",
             {
                 "request": request,
-                "error": "اسم المتجر مستخدم بالفعل"
+                "error": "كلمة المرور يجب أن تكون 8 أحرف على الأقل"
             }
         )
     
     # Check if mobile number already exists
-    existing_mobile = db.query(Store).filter(Store.mobile_number == mobile_number).first()
-    if existing_mobile:
+    existing_user = db.query(User).filter(User.mobile_number == mobile_number).first()
+    if existing_user:
         return templates.TemplateResponse(
             "register.html",
             {
@@ -135,33 +161,128 @@ async def register(
             }
         )
     
-    # Create new store
-    new_store = Store(
-        store_name=store_name,
-        owner_name=owner_name,
+    # Generate OTP
+    otp_code = generate_otp()
+    
+    # Delete any existing OTP sessions for this mobile
+    db.query(OTPSession).filter(OTPSession.mobile_number == mobile_number).delete()
+    
+    # Create new OTP session
+    otp_session = OTPSession(
         mobile_number=mobile_number,
-        facebook_page=facebook_page
+        otp_code=otp_code
     )
-    db.add(new_store)
+    db.add(otp_session)
     db.commit()
     
+    # Send OTP via SMS
+    sms_message = f"رمز التحقق الخاص بك في تجارة: {otp_code}"
+    send_sms(mobile_number, sms_message)
+    
+    # Store registration data in session
+    request.session["pending_mobile"] = mobile_number
+    request.session["pending_password"] = hash_password(password)
+    
+    return RedirectResponse(url="/verify-sms", status_code=303)
+
+@app.get("/verify-sms", response_class=HTMLResponse)
+async def verify_sms_page(request: Request, db: Session = Depends(get_db)):
+    mobile_number = request.session.get("pending_mobile")
+    
+    if not mobile_number:
+        return RedirectResponse(url="/register")
+    
+    # Get the OTP session
+    otp_session = db.query(OTPSession).filter(
+        OTPSession.mobile_number == mobile_number
+    ).first()
+    
+    # Only show OTP on screen in development mode
+    otp_code = None
+    if ENVIRONMENT == "development" and otp_session:
+        otp_code = otp_session.otp_code
+    
     return templates.TemplateResponse(
-        "register.html",
+        "verify_sms.html",
         {
             "request": request,
-            "success": "تم التسجيل بنجاح! يمكنك الآن تسجيل الدخول"
+            "otp_code": otp_code,
+            "mobile_number": mobile_number,
+            "is_production": ENVIRONMENT == "production"
         }
     )
 
+@app.post("/verify-sms")
+async def verify_sms(
+    request: Request,
+    otp_code: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    mobile_number = request.session.get("pending_mobile")
+    password_hash = request.session.get("pending_password")
+    
+    if not mobile_number or not password_hash:
+        return RedirectResponse(url="/register")
+    
+    # Check OTP
+    otp_session = db.query(OTPSession).filter(
+        OTPSession.mobile_number == mobile_number,
+        OTPSession.otp_code == otp_code
+    ).first()
+    
+    if not otp_session:
+        return templates.TemplateResponse(
+            "verify_sms.html",
+            {
+                "request": request,
+                "error": "رمز التحقق غير صحيح",
+                "mobile_number": mobile_number,
+                "is_production": ENVIRONMENT == "production"
+            }
+        )
+    
+    # Create user account
+    new_user = User(
+        mobile_number=mobile_number,
+        password_hash=password_hash,
+        verified=1
+    )
+    db.add(new_user)
+    
+    # Mark OTP as verified
+    otp_session.verified = 1
+    
+    db.commit()
+    
+    # Clear pending session data
+    request.session.pop("pending_mobile", None)
+    request.session.pop("pending_password", None)
+    
+    # Redirect to login with success message
+    return RedirectResponse(url="/login?registered=true", status_code=303)
+
+# ============================================================================
+# LOGIN FLOW
+# ============================================================================
+
 @app.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request):
-    return templates.TemplateResponse("login.html", {"request": request})
+    registered = request.query_params.get("registered")
+    success_message = "تم التسجيل بنجاح! يمكنك الآن تسجيل الدخول" if registered else None
+    
+    return templates.TemplateResponse(
+        "login.html",
+        {
+            "request": request,
+            "success": success_message
+        }
+    )
 
 @app.post("/login")
 async def login(
     request: Request,
     mobile_number: str = Form(...),
-    store_name: str = Form(...),
+    password: str = Form(...),
     db: Session = Depends(get_db),
     g_recaptcha_response: str = Form(None, alias="g-recaptcha-response")
 ):
@@ -174,167 +295,115 @@ async def login(
                 "error": "يرجى إكمال التحقق من أنك لست روبوت"
             }
         )
-    # Check if store exists with this mobile number and store name
-    store = db.query(Store).filter(
-        Store.mobile_number == mobile_number,
-        Store.store_name == store_name
-    ).first()
     
-    if not store:
+    # Check if user exists
+    user = db.query(User).filter(User.mobile_number == mobile_number).first()
+    
+    if not user or not verify_password(password, user.password_hash):
         return templates.TemplateResponse(
             "login.html",
             {
                 "request": request,
-                "error": "رقم الهاتف أو اسم المتجر غير صحيح"
+                "error": "رقم الهاتف أو كلمة المرور غير صحيحة"
             }
         )
     
-    # Generate OTP
-    otp_code = generate_otp()
-    
-    # Delete any existing OTP sessions for this mobile/store
-    db.query(OTPSession).filter(
-        OTPSession.mobile_number == mobile_number,
-        OTPSession.store_name == store_name
-    ).delete()
-    
-    # Create new OTP session
-    otp_session = OTPSession(
-        mobile_number=mobile_number,
-        store_name=store_name,
-        otp_code=otp_code
-    )
-    db.add(otp_session)
-    db.commit()
-    
-    # Store in session for verification page
-    request.session["pending_mobile"] = mobile_number
-    request.session["pending_store"] = store_name
-    
-    return RedirectResponse(url="/verify-otp", status_code=303)
-
-@app.get("/verify-otp", response_class=HTMLResponse)
-async def verify_otp_page(request: Request, db: Session = Depends(get_db)):
-    mobile_number = request.session.get("pending_mobile")
-    store_name = request.session.get("pending_store")
-    
-    if not mobile_number or not store_name:
-        return RedirectResponse(url="/login")
-    
-    # Get the OTP for display (in production, this would be sent via SMS)
-    otp_session = db.query(OTPSession).filter(
-        OTPSession.mobile_number == mobile_number,
-        OTPSession.store_name == store_name
-    ).first()
-    
-    otp_code = otp_session.otp_code if otp_session else None
-    
-    return templates.TemplateResponse(
-        "verify_otp.html",
-        {
-            "request": request,
-            "otp_code": otp_code,  # For demo purposes only
-            "mobile_number": mobile_number
-        }
-    )
-
-@app.post("/verify-otp")
-async def verify_otp(
-    request: Request,
-    otp_code: str = Form(...),
-    db: Session = Depends(get_db)
-):
-    mobile_number = request.session.get("pending_mobile")
-    store_name = request.session.get("pending_store")
-    
-    if not mobile_number or not store_name:
-        return RedirectResponse(url="/login")
-    
-    # Check OTP
-    otp_session = db.query(OTPSession).filter(
-        OTPSession.mobile_number == mobile_number,
-        OTPSession.store_name == store_name,
-        OTPSession.otp_code == otp_code
-    ).first()
-    
-    if not otp_session:
-        # Clear session and redirect to login
-        request.session.clear()
-        return RedirectResponse(url="/login?error=invalid_otp", status_code=303)
-    
-    # Mark as verified
-    otp_session.verified = 1
-    db.commit()
-    
     # Set authenticated session
     request.session["authenticated"] = True
-    request.session["mobile_number"] = mobile_number
-    request.session["store_name"] = store_name
+    request.session["user_id"] = user.id
+    request.session["mobile_number"] = user.mobile_number
     
-    # Clear pending session data
-    request.session.pop("pending_mobile", None)
-    request.session.pop("pending_store", None)
-    
-    return RedirectResponse(url="/profile", status_code=303)
+    return RedirectResponse(url="/dashboard", status_code=303)
 
-@app.get("/profile", response_class=HTMLResponse)
-async def profile_page(request: Request, db: Session = Depends(get_db)):
+# ============================================================================
+# DASHBOARD
+# ============================================================================
+
+@app.get("/dashboard", response_class=HTMLResponse)
+async def dashboard_page(request: Request, db: Session = Depends(get_db)):
     if not request.session.get("authenticated"):
         return RedirectResponse(url="/login")
     
-    mobile_number = request.session.get("mobile_number")
-    store_name = request.session.get("store_name")
+    user_id = request.session.get("user_id")
+    user = db.query(User).filter(User.id == user_id).first()
     
-    store = db.query(Store).filter(
-        Store.mobile_number == mobile_number,
-        Store.store_name == store_name
-    ).first()
-    
-    if not store:
+    if not user:
         request.session.clear()
         return RedirectResponse(url="/login")
     
+    # Get user's domains
+    domains = db.query(Domain).filter(Domain.user_id == user_id).all()
+    
     return templates.TemplateResponse(
-        "profile.html",
+        "dashboard.html",
         {
             "request": request,
-            "store": store
+            "user": user,
+            "domains": domains
         }
     )
 
-@app.post("/profile")
-async def update_profile(
+@app.post("/dashboard/add-domain")
+async def add_domain(
     request: Request,
-    facebook_page: str = Form(...),
+    domain_type: str = Form(...),
+    custom_domain_input: str = Form(None),
+    store_name: str = Form(None),
     db: Session = Depends(get_db)
 ):
     if not request.session.get("authenticated"):
         return RedirectResponse(url="/login")
     
-    mobile_number = request.session.get("mobile_number")
-    store_name = request.session.get("store_name")
+    user_id = request.session.get("user_id")
     
-    store = db.query(Store).filter(
-        Store.mobile_number == mobile_number,
-        Store.store_name == store_name
-    ).first()
+    # Determine domain name based on type
+    if domain_type == "custom":
+        domain_name = custom_domain_input
+        if not domain_name or not domain_name.strip():
+            return RedirectResponse(url="/dashboard?error=empty_domain", status_code=303)
+    else:  # temporary
+        if not store_name or not validate_domain_name(store_name):
+            return RedirectResponse(url="/dashboard?error=invalid_store_name", status_code=303)
+        domain_name = f"{store_name}.tejara.ps"
     
-    if not store:
-        request.session.clear()
-        return RedirectResponse(url="/login")
+    # Check if domain already exists
+    existing_domain = db.query(Domain).filter(Domain.domain_name == domain_name).first()
+    if existing_domain:
+        return RedirectResponse(url="/dashboard?error=domain_exists", status_code=303)
     
-    # Update Facebook page
-    store.facebook_page = facebook_page
+    # Create new domain
+    new_domain = Domain(
+        user_id=user_id,
+        domain_name=domain_name,
+        domain_type=domain_type
+    )
+    db.add(new_domain)
     db.commit()
     
-    return templates.TemplateResponse(
-        "profile.html",
-        {
-            "request": request,
-            "store": store,
-            "success": "تم تحديث صفحة الفيسبوك بنجاح"
-        }
-    )
+    return RedirectResponse(url="/dashboard?success=domain_added", status_code=303)
+
+@app.post("/dashboard/delete-domain/{domain_id}")
+async def delete_domain(
+    domain_id: int,
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    if not request.session.get("authenticated"):
+        return RedirectResponse(url="/login")
+    
+    user_id = request.session.get("user_id")
+    
+    # Find domain and verify ownership
+    domain = db.query(Domain).filter(
+        Domain.id == domain_id,
+        Domain.user_id == user_id
+    ).first()
+    
+    if domain:
+        db.delete(domain)
+        db.commit()
+    
+    return RedirectResponse(url="/dashboard?success=domain_deleted", status_code=303)
 
 @app.get("/logout")
 async def logout(request: Request):
@@ -345,4 +414,3 @@ async def logout(request: Request):
 async def health_check():
     """Health check endpoint for Docker and monitoring"""
     return {"status": "healthy", "service": "tegara"}
-
