@@ -9,8 +9,8 @@ on:
       - DEV
 
 env:
-  DOCKER_USERNAME: sharefdnskube
-  DOCKER_REPO: sharefdnskube/tejara
+  DOCKER_USERNAME: tejaradev
+  DOCKER_REPO: tejaradev/tejara-dev
 
 jobs:
   build-and-push:

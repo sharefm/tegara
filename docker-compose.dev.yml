@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   web:
-    image: sharefdnskube/tejara:dev-latest
+    image: tejaradev/tejara-dev:latest
     container_name: tegara-dev
     ports:
       - "8000:8000"
