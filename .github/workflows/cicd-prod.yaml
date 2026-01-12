@@ -40,10 +40,10 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: |
-            ${{ env.DOCKER_REPO }}:prod
+            ${{ env.DOCKER_REPO }}:prod-latest
             ${{ env.DOCKER_REPO }}:prod-${{ steps.timestamp.outputs.timestamp }}
           cache-from: type=registry,ref=${{ env.DOCKER_REPO }}:buildcache-prod
           cache-to: type=registry,ref=${{ env.DOCKER_REPO }}:buildcache-prod,mode=max
       
       - name: Image digest
-        run: echo "Production image pushed successfully with tags prod and prod-${{ steps.timestamp.outputs.timestamp }}"
+        run: echo "Production image pushed successfully with tags prod-latest and prod-${{ steps.timestamp.outputs.timestamp }}"
