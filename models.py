@@ -23,7 +23,9 @@ class Domain(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     domain_name = Column(String, unique=True, nullable=False, index=True)
-    domain_type = Column(String, nullable=False)  # 'custom' or 'temporary'
+    domain_type = Column(String, nullable=False)  # 'custom' or 'temp'
+    social_media_url = Column(String, nullable=False)  # URL to redirect to
+    is_active = Column(Integer, default=1)  # 1 = active, 0 = inactive
     created_at = Column(DateTime, default=datetime.utcnow)
     
     # Relationship to user

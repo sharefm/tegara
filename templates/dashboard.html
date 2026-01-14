@@ -67,6 +67,12 @@
                 </div>
             </div>
 
+            <div class="form-group">
+                <label for="social_media_url">رابط المتجر على السوشيال ميديا</label>
+                <input type="url" id="social_media_url" name="social_media_url"
+                    placeholder="https://facebook.com/mystore" required>
+            </div>
+
             <button type="submit" class="btn btn-primary">إضافة دومين</button>
         </form>
 
@@ -80,12 +86,20 @@
             <div class="domain-item">
                 <div class="domain-info">
                     <div class="domain-name">{{ domain.domain_name }}</div>
-                    <div class="domain-type">
-                        {% if domain.domain_type == 'custom' %}
-                        <span class="badge badge-custom">دومين خاص</span>
-                        {% else %}
-                        <span class="badge badge-temp">دومين مؤقت</span>
-                        {% endif %}
+                    <div class="domain-meta">
+                        <div class="domain-type">
+                            {% if domain.domain_type == 'custom' %}
+                            <span class="badge badge-custom">دومين خاص</span>
+                            {% else %}
+                            <span class="badge badge-temp">دومين مؤقت</span>
+                            {% endif %}
+                        </div>
+                        <div class="social-media-link">
+                            <span style="color: var(--text-muted); font-size: 0.9rem;">يوجه إلى:</span>
+                            <a href="{{ domain.social_media_url }}" target="_blank" class="social-link">
+                                {{ domain.social_media_url }}
+                            </a>
+                        </div>
                     </div>
                 </div>
                 <form method="POST" action="/dashboard/delete-domain/{{ domain.id }}" style="display: inline;">

@@ -349,6 +349,7 @@ async def add_domain(
     domain_type: str = Form(...),
     custom_domain_input: str = Form(None),
     store_name: str = Form(None),
+    social_media_url: str = Form(...),
     db: Session = Depends(get_db)
 ):
     if not request.session.get("authenticated"):
@@ -375,7 +376,8 @@ async def add_domain(
     new_domain = Domain(
         user_id=user_id,
         domain_name=domain_name,
-        domain_type=domain_type
+        domain_type=domain_type,
+        social_media_url=social_media_url
     )
     db.add(new_domain)
     db.commit()

@@ -388,8 +388,33 @@ input[type="text"].otp-input {
     margin-bottom: 8px;
 }
 
+.domain-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
 .domain-type {
     font-size: 0.9rem;
+}
+
+.social-media-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.social-link {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.3s ease;
+}
+
+.social-link:hover {
+    color: var(--primary-dark);
+    text-decoration: underline;
 }
 
 .badge {
