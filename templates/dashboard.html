@@ -108,13 +108,19 @@
                             <div class="domain-status">
                                 {% if domain.subscription_status == 'expired' %}
                                 <span class="badge badge-expired">انتهى الاشتراك</span>
+                                <button type="button" class="btn btn-subscribe"
+                                    onclick="subscribeDomain({{ domain.id }})">اشترك الآن</button>
                                 {% elif domain.subscription_status == 'trial' %}
                                 <span class="badge badge-trial">تجريبي</span>
+                                <button type="button" class="btn btn-subscribe"
+                                    onclick="subscribeDomain({{ domain.id }})">اشترك الآن</button>
                                 {% elif domain.subscription_status == 'active' %}
                                 <span class="badge badge-subscribed">مشترك فعال</span>
                                 {% else %}
                                 {# Default to trial if status is not set #}
                                 <span class="badge badge-trial">تجريبي</span>
+                                <button type="button" class="btn btn-subscribe"
+                                    onclick="subscribeDomain({{ domain.id }})">اشترك الآن</button>
                                 {% endif %}
                             </div>
                         </div>
@@ -369,5 +375,11 @@
             closeEditModal();
         }
     });
+
+    // Subscribe button handler
+    function subscribeDomain(domainId) {
+        // Redirect to subscription page
+        window.location.href = '/subscribe/' + domainId;
+    }
 </script>
 {% endblock %}

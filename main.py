@@ -466,6 +466,35 @@ async def edit_domain(
     
     return RedirectResponse(url="/dashboard?success=domain_updated", status_code=303)
 
+@app.get("/subscribe/{domain_id}", response_class=HTMLResponse)
+async def subscribe_page(
+    domain_id: int,
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    # Verify authentication
+    if not request.session.get("authenticated"):
+        return RedirectResponse(url="/login")
+    
+    user_id = request.session.get("user_id")
+    
+    # Get domain and verify ownership
+    domain = db.query(Domain).filter(
+        Domain.id == domain_id,
+        Domain.user_id == user_id
+    ).first()
+    
+    if not domain:
+        return RedirectResponse(url="/dashboard?error=domain_not_found", status_code=303)
+    
+    return templates.TemplateResponse(
+        "subscribe.html",
+        {
+            "request": request,
+            "domain": domain
+        }
+    )
+
 @app.get("/logout")
 async def logout(request: Request):
     request.session.clear()
