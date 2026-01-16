@@ -26,7 +26,9 @@ class Domain(Base):
     domain_type = Column(String, nullable=False)  # 'custom' or 'temp'
     social_media_url = Column(String, nullable=False)  # URL to redirect to
     is_active = Column(Integer, default=1)  # 1 = active, 0 = inactive
+    subscription_status = Column(String, default='trial')  # 'trial', 'active', 'expired'
     created_at = Column(DateTime, default=datetime.utcnow)
+    expiry_date = Column(DateTime, nullable=True)  # Domain expiry date
     
     # Relationship to user
     user = relationship("User", back_populates="domains")

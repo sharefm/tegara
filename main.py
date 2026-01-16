@@ -101,6 +101,9 @@ def verify_recaptcha(recaptcha_response: str, min_score: float = 0.5) -> bool:
 
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
+    # Redirect authenticated users to dashboard
+    if request.session.get("authenticated"):
+        return RedirectResponse(url="/dashboard")
     return templates.TemplateResponse("landing.html", {"request": request})
 
 # ============================================================================
@@ -339,7 +342,9 @@ async def dashboard_page(request: Request, db: Session = Depends(get_db)):
         {
             "request": request,
             "user": user,
-            "domains": domains
+            "domains": domains,
+            "datetime": datetime,
+            "timedelta": timedelta
         }
     )
 
@@ -372,12 +377,15 @@ async def add_domain(
     if existing_domain:
         return RedirectResponse(url="/dashboard?error=domain_exists", status_code=303)
     
-    # Create new domain
+    # Create new domain with expiry date (7 days from now) and trial status
+    expiry_date = datetime.utcnow() + timedelta(days=7)
     new_domain = Domain(
         user_id=user_id,
         domain_name=domain_name,
         domain_type=domain_type,
-        social_media_url=social_media_url
+        social_media_url=social_media_url,
+        subscription_status='trial',
+        expiry_date=expiry_date
     )
     db.add(new_domain)
     db.commit()
@@ -406,6 +414,57 @@ async def delete_domain(
         db.commit()
     
     return RedirectResponse(url="/dashboard?success=domain_deleted", status_code=303)
+
+@app.post("/dashboard/edit-domain/{domain_id}")
+async def edit_domain(
+    domain_id: int,
+    request: Request,
+    domain_type: str = Form(...),
+    custom_domain_input: str = Form(None),
+    store_name: str = Form(None),
+    social_media_url: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    if not request.session.get("authenticated"):
+        return RedirectResponse(url="/login")
+    
+    user_id = request.session.get("user_id")
+    
+    # Find domain and verify ownership
+    domain = db.query(Domain).filter(
+        Domain.id == domain_id,
+        Domain.user_id == user_id
+    ).first()
+    
+    if not domain:
+        return RedirectResponse(url="/dashboard?error=domain_not_found", status_code=303)
+    
+    # Determine new domain name based on type
+    if domain_type == "custom":
+        new_domain_name = custom_domain_input
+        if not new_domain_name or not new_domain_name.strip():
+            return RedirectResponse(url="/dashboard?error=empty_domain", status_code=303)
+    else:  # temporary
+        if not store_name or not validate_domain_name(store_name):
+            return RedirectResponse(url="/dashboard?error=invalid_store_name", status_code=303)
+        new_domain_name = f"{store_name}.tejara.ps"
+    
+    # Check if new domain name conflicts with existing domains (excluding current domain)
+    if new_domain_name != domain.domain_name:
+        existing_domain = db.query(Domain).filter(
+            Domain.domain_name == new_domain_name,
+            Domain.id != domain_id
+        ).first()
+        if existing_domain:
+            return RedirectResponse(url="/dashboard?error=domain_exists", status_code=303)
+    
+    # Update domain
+    domain.domain_name = new_domain_name
+    domain.domain_type = domain_type
+    domain.social_media_url = social_media_url
+    db.commit()
+    
+    return RedirectResponse(url="/dashboard?success=domain_updated", status_code=303)
 
 @app.get("/logout")
 async def logout(request: Request):
