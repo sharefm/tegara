@@ -2,18 +2,21 @@ version: '3.8'
 
 services:
   web:
-    image: sharefdnskube/tejara:prod-latest
-    container_name: tegara-prod
+    image: tejaradev/tejara-dev:dev-latest
+    container_name: tegara-dev
     ports:
       - "8000:8000"
     volumes:
+      # Mount source code for live reloading in development
+      - ./:/app
       # Persist database
       - ./data:/app/data
     env_file:
-      - .env.prod
+      - .env.dev
     environment:
-      - ENVIRONMENT=production
-    restart: always
+      - ENVIRONMENT=development
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    restart: unless-stopped
     healthcheck:
       test: [ "CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)" ]
       interval: 30s
@@ -25,29 +28,29 @@ services:
 
   nginx:
     image: nginx:alpine
-    container_name: nginx-prod
+    container_name: nginx-dev
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - ./nginx.conf.prod:/etc/nginx/nginx.conf:ro
+      - ./nginx.conf.dev:/etc/nginx/nginx.conf:ro
       - ./ssl:/etc/nginx/ssl:ro
     depends_on:
       - web
-    restart: always
+    restart: unless-stopped
     networks:
       - tegara-network
 
   portainer:
     image: portainer/portainer-ce:latest
-    container_name: portainer-prod
+    container_name: portainer-dev
     ports:
       - "9443:9443"
       - "9000:9000"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - portainer_data:/data
-    restart: always
+    restart: unless-stopped
     networks:
       - tegara-network
 

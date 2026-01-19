@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}اشترك الآن - تجارة{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 1400px;">
+    <div class="card">
+        <!-- Header with domain name -->
+        <div class="subscribe-header">
+            <a href="/dashboard" class="back-link">← العودة للوحة التحكم</a>
+            <h1 class="subscribe-title">اشترك الآن</h1>
+            <div class="domain-display">
+                <span class="domain-label">الدومين:</span>
+                <span class="domain-name-large">{{ domain.domain_name }}</span>
+            </div>
+            {% if domain.subscription_status == 'trial' %}
+            <p class="status-message">أنت حالياً في الفترة التجريبية. اختر خطة الاشتراك المناسبة لك:</p>
+            {% elif domain.subscription_status == 'expired' %}
+            <p class="status-message expired">انتهى اشتراكك. قم بتجديد الاشتراك للاستمرار:</p>
+            {% endif %}
+        </div>
+
+        <!-- Subscription Plans -->
+        <div class="subscription-plans">
+            <!-- 1 Month Plan -->
+            <div class="plan-card">
+                <div class="plan-header">
+                    <h3 class="plan-title">اشتراك لشهر</h3>
+                    <div class="plan-duration">شهر واحد</div>
+                </div>
+                <div class="plan-price">
+                    <span class="price-amount">30</span>
+                    <span class="price-currency">شيكل</span>
+                </div>
+                <ul class="plan-features">
+                    <li>✓ عنوان نشط لمدة شهر</li>
+                    <li>✓ توجيه غير محدود</li>
+                    <li>✓ دعم فني</li>
+                </ul>
+                <button class="btn btn-plan" onclick="selectPlan({{ domain.id }}, 1)">اختر هذه الخطة</button>
+            </div>
+
+            <!-- 3 Months Plan -->
+            <div class="plan-card">
+                <div class="plan-header">
+                    <h3 class="plan-title">اشتراك 3 شهور</h3>
+                    <div class="plan-duration">ثلاثة أشهر</div>
+                </div>
+                <div class="plan-price">
+                    <span class="price-amount">80</span>
+                    <span class="price-currency">شيكل</span>
+                </div>
+                <ul class="plan-features">
+                    <li>✓ عنوان نشط لمدة 3 أشهر</li>
+                    <li>✓ توجيه غير محدود</li>
+                    <li>✓ دعم فني</li>
+                    <li>✓ خصم 10%</li>
+                </ul>
+                <button class="btn btn-plan" onclick="selectPlan({{ domain.id }}, 3)">اختر هذه الخطة</button>
+            </div>
+
+            <!-- 6 Months Plan -->
+            <div class="plan-card popular">
+                <div class="popular-badge">الأكثر توصية</div>
+                <div class="plan-header">
+                    <h3 class="plan-title">اشتراك 6 شهور</h3>
+                    <div class="plan-duration">ستة أشهر</div>
+                </div>
+                <div class="plan-price">
+                    <span class="price-amount">150</span>
+                    <span class="price-currency">شيكل</span>
+                </div>
+                <ul class="plan-features">
+                    <li>✓ عنوان نشط لمدة 6 أشهر</li>
+                    <li>✓ توجيه غير محدود</li>
+                    <li>✓ دعم فني متقدم</li>
+                    <li>✓ خصم 15%</li>
+                </ul>
+                <button class="btn btn-plan btn-plan-popular" onclick="selectPlan({{ domain.id }}, 6)">اختر هذه
+                    الخطة</button>
+            </div>
+
+            <!-- 1 Year Plan -->
+            <div class="plan-card">
+                <div class="plan-header">
+                    <h3 class="plan-title">اشتراك سنة</h3>
+                    <div class="plan-duration">سنة كاملة</div>
+                </div>
+                <div class="plan-price">
+                    <span class="price-amount">280</span>
+                    <span class="price-currency">شيكل</span>
+                </div>
+                <ul class="plan-features">
+                    <li>✓ عنوان نشط لمدة سنة</li>
+                    <li>✓ توجيه غير محدود</li>
+                    <li>✓ دعم فني VIP</li>
+                    <li>✓ خصم 20%</li>
+                    <li>✓ أولوية في الخدمات</li>
+                </ul>
+                <button class="btn btn-plan" onclick="selectPlan({{ domain.id }}, 12)">اختر هذه الخطة</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function selectPlan(domainId, months) {
+        // TODO: Implement payment flow
+        alert('تم اختيار خطة ' + months + ' شهر للدومين رقم: ' + domainId + '\n\nسيتم توجيهك لصفحة الدفع قريباً');
+        // Future: redirect to payment gateway
+        // window.location.href = '/payment?domain=' + domainId + '&plan=' + months;
+    }
+</script>
+{% endblock %}

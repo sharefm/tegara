@@ -1,16 +1,16 @@
-name: CI/CD - PROD Environment
+name: CI/CD - DEV Environment
 
 on:
   push:
     branches:
-      - PROD
+      - DEV
   pull_request:
     branches:
-      - PROD
+      - DEV
 
 env:
-  DOCKER_USERNAME: sharefdnskube
-  DOCKER_REPO: sharefdnskube/tejara
+  DOCKER_USERNAME: tejaradev
+  DOCKER_REPO: tejaradev/tejara-dev
 
 jobs:
   build-and-push:
@@ -40,10 +40,10 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: |
-            ${{ env.DOCKER_REPO }}:prod-latest
-            ${{ env.DOCKER_REPO }}:prod-${{ steps.timestamp.outputs.timestamp }}
-          cache-from: type=registry,ref=${{ env.DOCKER_REPO }}:buildcache-prod
-          cache-to: type=registry,ref=${{ env.DOCKER_REPO }}:buildcache-prod,mode=max
+            ${{ env.DOCKER_REPO }}:dev-latest
+            ${{ env.DOCKER_REPO }}:${{ steps.timestamp.outputs.timestamp }}
+          cache-from: type=registry,ref=${{ env.DOCKER_REPO }}:buildcache
+          cache-to: type=registry,ref=${{ env.DOCKER_REPO }}:buildcache,mode=max
       
       - name: Image digest
-        run: echo "Production image pushed successfully with tags prod-latest and prod-${{ steps.timestamp.outputs.timestamp }}"
+        run: echo "Image pushed successfully with tags dev-latest and ${{ steps.timestamp.outputs.timestamp }}"

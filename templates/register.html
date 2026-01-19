@@ -7,7 +7,7 @@
     <div class="card">
         <div class="logo">
             <h1>تجارة</h1>
-            <p>سجل متجرك الإلكتروني الآن</p>
+            <p>سجل حسابك الآن</p>
         </div>
 
         {% if error %}
@@ -16,28 +16,7 @@
         </div>
         {% endif %}
 
-        {% if success %}
-        <div class="alert alert-success">
-            {{ success }}
-        </div>
-        {% endif %}
-
         <form method="POST" action="/register" id="registerForm">
-            <div class="form-group">
-                <label for="store_name">اسم المتجر</label>
-                <div class="domain-input-group">
-                    <span class="domain-suffix">.tejara.ps</span>
-                    <input type="text" id="store_name" name="store_name" placeholder="متجري" required
-                        pattern="[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]|[a-zA-Z0-9]"
-                        title="يجب أن يحتوي على أحرف إنجليزية وأرقام وشرطات فقط">
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label for="owner_name">الاسم الكامل للمالك</label>
-                <input type="text" id="owner_name" name="owner_name" placeholder="أحمد محمد" required>
-            </div>
-
             <div class="form-group">
                 <label for="mobile_number">رقم الهاتف</label>
                 <input type="tel" id="mobile_number" name="mobile_number" placeholder="0599123456" required
@@ -45,9 +24,15 @@
             </div>
 
             <div class="form-group">
-                <label for="facebook_page">صفحة الفيسبوك</label>
-                <input type="url" id="facebook_page" name="facebook_page" placeholder="https://facebook.com/mystore"
-                    required>
+                <label for="password">كلمة المرور</label>
+                <input type="password" id="password" name="password" placeholder="كلمة المرور" required minlength="8"
+                    title="يجب أن تكون كلمة المرور 8 أحرف على الأقل">
+            </div>
+
+            <div class="form-group">
+                <label for="confirm_password">تأكيد كلمة المرور</label>
+                <input type="password" id="confirm_password" name="confirm_password" placeholder="تأكيد كلمة المرور"
+                    required minlength="8">
             </div>
 
             <button type="submit" class="btn btn-primary" id="submitBtn">إنشاء حساب</button>
@@ -62,15 +47,20 @@
 
 {% block extra_js %}
 <script>
-    // Client-side validation for store name
+    // Client-side validation
     document.getElementById('registerForm').addEventListener('submit', function (e) {
         e.preventDefault();
 
-        const storeName = document.getElementById('store_name').value;
-        const pattern = /^[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]$|^[a-zA-Z0-9]$/;
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('confirm_password').value;
 
-        if (!pattern.test(storeName)) {
-            alert('اسم المتجر يجب أن يحتوي على أحرف إنجليزية وأرقام وشرطات فقط');
+        if (password !== confirmPassword) {
+            alert('كلمات المرور غير متطابقة');
+            return;
+        }
+
+        if (password.length < 8) {
+            alert('كلمة المرور يجب أن تكون 8 أحرف على الأقل');
             return;
         }
 

@@ -1,0 +1,437 @@
+{% extends "base.html" %}
+
+{% block title %}لوحة التحكم - تجارة{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 800px;">
+    <div class="card">
+        <div class="dashboard-header">
+            <div class="logo">
+                <h1>تجارة</h1>
+                <p>مرحباً {{ user.mobile_number }}</p>
+            </div>
+            <a href="/logout" class="btn btn-secondary" style="width: auto; padding: 12px 24px;">تسجيل الخروج</a>
+        </div>
+
+        {% if request.query_params.get('success') == 'domain_added' %}
+        <div class="alert alert-success">
+            تم إضافة الدومين بنجاح!
+        </div>
+        {% elif request.query_params.get('success') == 'domain_deleted' %}
+        <div class="alert alert-success">
+            تم حذف الدومين بنجاح!
+        </div>
+        {% elif request.query_params.get('success') == 'domain_updated' %}
+        <div class="alert alert-success">
+            تم تحديث الدومين بنجاح!
+        </div>
+        {% elif request.query_params.get('error') == 'domain_exists' %}
+        <div class="alert alert-error">
+            الدومين مستخدم بالفعل
+        </div>
+        {% elif request.query_params.get('error') == 'invalid_store_name' %}
+        <div class="alert alert-error">
+            اسم المتجر يجب أن يحتوي على أحرف إنجليزية وأرقام وشرطات فقط
+        </div>
+        {% elif request.query_params.get('error') == 'empty_domain' %}
+        <div class="alert alert-error">
+            يرجى إدخال الدومين
+        </div>
+        {% elif request.query_params.get('error') == 'domain_not_found' %}
+        <div class="alert alert-error">
+            الدومين غير موجود
+        </div>
+        {% elif request.query_params.get('error') == 'invalid_url' %}
+        <div class="alert alert-error">
+            رابط السوشيال ميديا غير صحيح
+        </div>
+        {% endif %}
+
+        <h2 style="margin-bottom: 20px; color: var(--text-dark);">إضافة دومين جديد</h2>
+
+        <form method="POST" action="/dashboard/add-domain" id="addDomainForm">
+            <div class="form-group">
+                <label>نوع الدومين</label>
+                <div class="radio-group">
+                    <div class="radio-option">
+                        <input type="radio" id="custom_domain" name="domain_type" value="custom">
+                        <label for="custom_domain">عندي دومين خاص</label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" id="temp_domain" name="domain_type" value="temporary" checked>
+                        <label for="temp_domain">استعمل دومين تجريبي</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group" id="custom_domain_field" style="display: none;">
+                <label for="custom_domain_input">الدومين الخاص</label>
+                <input type="text" id="custom_domain_input" name="custom_domain_input" placeholder="domain.ps">
+            </div>
+
+            <div class="form-group" id="temp_domain_field">
+                <label for="store_name" id="store_name_label">اسم المتجر</label>
+                <div class="domain-input-group">
+                    <span class="domain-suffix">.tejara.ps</span>
+                    <span class="domain-dot">.</span>
+                    <input type="text" id="store_name" name="store_name" placeholder="my-store"
+                        pattern="[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]|[a-zA-Z0-9]" maxlength="63"
+                        title="يجب أن يحتوي على أحرف إنجليزية وأرقام وشرطات فقط (لا يمكن استخدام أحرف عربية)">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="social_media_url">رابط المتجر على السوشيال ميديا</label>
+                <input type="text" id="social_media_url" name="social_media_url"
+                    placeholder="https://facebook.com/mystore" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary">إضافة دومين</button>
+        </form>
+
+        <hr style="margin: 40px 0; border: none; border-top: 1px solid var(--border-color);">
+
+        <h2 style="margin-bottom: 20px; color: var(--text-dark);">الدومينات الخاصة بك</h2>
+
+        {% if domains %}
+        <div class="domains-list">
+            {% for domain in domains %}
+            <div class="domain-item">
+                <div class="domain-info">
+                    <a href="http://{{ domain.domain_name }}" target="_blank" class="domain-name domain-link">{{
+                        domain.domain_name }}</a>
+                    <div class="domain-meta">
+                        <div class="domain-badges">
+                            <div class="domain-type">
+                                {% if domain.domain_type == 'custom' %}
+                                <span class="badge badge-custom">دومين خاص</span>
+                                {% else %}
+                                <span class="badge badge-temp">دومين تجريبي</span>
+                                {% endif %}
+                            </div>
+                            <div class="domain-status">
+                                {% if domain.subscription_status == 'expired' %}
+                                <span class="badge badge-expired">انتهى الاشتراك</span>
+                                <button type="button" class="btn btn-subscribe"
+                                    onclick="subscribeDomain({{ domain.id }})">اشترك الآن</button>
+                                {% elif domain.subscription_status == 'trial' %}
+                                <span class="badge badge-trial">تجريبي</span>
+                                <button type="button" class="btn btn-subscribe"
+                                    onclick="subscribeDomain({{ domain.id }})">اشترك الآن</button>
+                                {% elif domain.subscription_status == 'active' %}
+                                <span class="badge badge-subscribed">مشترك فعال</span>
+                                {% else %}
+                                {# Default to trial if status is not set #}
+                                <span class="badge badge-trial">تجريبي</span>
+                                <button type="button" class="btn btn-subscribe"
+                                    onclick="subscribeDomain({{ domain.id }})">اشترك الآن</button>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% if domain.is_active == 1 and domain.expiry_date %}
+                        <div class="domain-expiry">
+                            <span style="color: var(--text-muted); font-size: 0.9rem;">حتى: </span>
+                            <span style="color: var(--text-dark); font-weight: 600; font-size: 0.9rem;">
+                                {{ domain.expiry_date.strftime('%d-%m-%Y') }}
+                            </span>
+                        </div>
+                        {% endif %}
+                        <div class="social-media-link">
+                            <span style="color: var(--text-muted); font-size: 0.9rem;">يوجه إلى:</span>
+                            <a href="{{ domain.social_media_url }}" target="_blank" class="social-link">
+                                {{ domain.social_media_url }}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="domain-actions">
+                    <button type="button" class="btn btn-edit"
+                        onclick="openEditModal({{ domain.id }}, '{{ domain.domain_type }}', '{{ domain.domain_name }}', '{{ domain.social_media_url }}')">تعديل</button>
+                    <form method="POST" action="/dashboard/delete-domain/{{ domain.id }}" style="display: inline;">
+                        <button type="submit" class="btn btn-delete"
+                            onclick="return confirm('هل أنت متأكد من حذف هذا الدومين?')">حذف</button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            لا توجد دومينات بعد. قم بإضافة دومين جديد أعلاه.
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Edit Domain Modal -->
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>تعديل الدومين</h2>
+            <button type="button" class="modal-close" onclick="closeEditModal()">&times;</button>
+        </div>
+        <form method="POST" id="editDomainForm">
+            <div class="form-group">
+                <label>نوع الدومين</label>
+                <div class="radio-group">
+                    <div class="radio-option">
+                        <input type="radio" id="edit_custom_domain" name="domain_type" value="custom">
+                        <label for="edit_custom_domain">عندي دومين خاص</label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" id="edit_temp_domain" name="domain_type" value="temporary">
+                        <label for="edit_temp_domain">استعمل دومين تجريبي</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group" id="edit_custom_domain_field" style="display: none;">
+                <label for="edit_custom_domain_input">الدومين الخاص</label>
+                <input type="text" id="edit_custom_domain_input" name="custom_domain_input" placeholder="domain.ps">
+            </div>
+
+            <div class="form-group" id="edit_temp_domain_field" style="display: none;">
+                <label for="edit_store_name" id="edit_store_name_label">اسم المتجر</label>
+                <div class="domain-input-group">
+                    <span class="domain-suffix">.tejara.ps</span>
+                    <span class="domain-dot">.</span>
+                    <input type="text" id="edit_store_name" name="store_name" placeholder="my-store"
+                        pattern="[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]|[a-zA-Z0-9]" maxlength="63"
+                        title="يجب أن يحتوي على أحرف إنجليزية وأرقام وشرطات فقط (لا يمكن استخدام أحرف عربية)">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="edit_social_media_url">رابط المتجر على السوشيال ميديا</label>
+                <input type="text" id="edit_social_media_url" name="social_media_url"
+                    placeholder="https://facebook.com/mystore" required>
+            </div>
+
+            <div class="modal-actions">
+                <button type="submit" class="btn btn-primary">حفظ التغييرات</button>
+                <button type="button" class="btn btn-secondary" onclick="closeEditModal()">إلغاء</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Toggle domain input fields based on radio selection
+    const customDomainRadio = document.getElementById('custom_domain');
+    const tempDomainRadio = document.getElementById('temp_domain');
+    const customDomainField = document.getElementById('custom_domain_field');
+    const tempDomainField = document.getElementById('temp_domain_field');
+    const customDomainInput = document.getElementById('custom_domain_input');
+    const storeNameInput = document.getElementById('store_name');
+
+    function toggleDomainFields() {
+        if (customDomainRadio.checked) {
+            customDomainField.style.display = 'block';
+            tempDomainField.style.display = 'none';
+            customDomainInput.required = true;
+            storeNameInput.required = false;
+        } else {
+            customDomainField.style.display = 'none';
+            tempDomainField.style.display = 'block';
+            customDomainInput.required = false;
+            storeNameInput.required = true;
+        }
+    }
+
+    customDomainRadio.addEventListener('change', toggleDomainFields);
+    tempDomainRadio.addEventListener('change', toggleDomainFields);
+
+    // Update label dynamically as user types
+    const storeNameLabel = document.getElementById('store_name_label');
+    storeNameInput.addEventListener('input', function () {
+        if (this.value.trim()) {
+            storeNameLabel.textContent = 'اسم المتجر: ' + this.value + '.tejara.ps';
+        } else {
+            storeNameLabel.textContent = 'اسم المتجر';
+        }
+    });
+
+    // Client-side validation
+    document.getElementById('addDomainForm').addEventListener('submit', function (e) {
+        const domainType = document.querySelector('input[name="domain_type"]:checked').value;
+        const socialMediaUrlInput = document.getElementById('social_media_url');
+        let socialMediaUrl = socialMediaUrlInput.value.trim();
+
+        // Normalize URL: add https:// if protocol is missing
+        if (socialMediaUrl && !socialMediaUrl.startsWith('http://') && !socialMediaUrl.startsWith('https://')) {
+            socialMediaUrl = 'https://' + socialMediaUrl;
+            socialMediaUrlInput.value = socialMediaUrl;
+        }
+
+        // Validate social media URL
+        const urlPattern = /^https?:\/\/[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*(\/.*)?$/;
+        if (!urlPattern.test(socialMediaUrl)) {
+            e.preventDefault();
+            alert('رابط السوشيال ميديا غير صحيح');
+            return;
+        }
+
+        if (domainType === 'temporary') {
+            const storeName = document.getElementById('store_name').value;
+            // DNS-compliant validation: only English letters, numbers, and hyphens
+            // Must start and end with alphanumeric, max 63 characters
+            const pattern = /^[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]$|^[a-zA-Z0-9]$/;
+
+            if (storeName.length > 63) {
+                e.preventDefault();
+                alert('اسم المتجر يجب أن يكون أقل من 63 حرف');
+                return;
+            }
+
+            if (!pattern.test(storeName)) {
+                e.preventDefault();
+                alert('اسم المتجر يجب أن يحتوي على أحرف إنجليزية وأرقام وشرطات فقط (لا يمكن استخدام أحرف عربية)');
+                return;
+            }
+        } else if (domainType === 'custom') {
+            const customDomain = document.getElementById('custom_domain_input').value;
+            if (!customDomain || customDomain.trim() === '') {
+                e.preventDefault();
+                alert('يرجى إدخال الدومين الخاص بك');
+                return;
+            }
+        }
+    });
+
+    // Edit Modal Functions
+    let currentEditDomainId = null;
+
+    function openEditModal(domainId, domainType, domainName, socialMediaUrl) {
+        currentEditDomainId = domainId;
+        const modal = document.getElementById('editModal');
+        const form = document.getElementById('editDomainForm');
+
+        // Set form action
+        form.action = '/dashboard/edit-domain/' + domainId;
+
+        // Set domain type radio
+        if (domainType === 'custom') {
+            document.getElementById('edit_custom_domain').checked = true;
+            document.getElementById('edit_custom_domain_input').value = domainName;
+        } else {
+            document.getElementById('edit_temp_domain').checked = true;
+            // Extract store name from domain (remove .tejara.ps)
+            const storeName = domainName.replace('.tejara.ps', '');
+            document.getElementById('edit_store_name').value = storeName;
+        }
+
+        // Set social media URL
+        document.getElementById('edit_social_media_url').value = socialMediaUrl;
+
+        // Toggle fields based on domain type
+        toggleEditDomainFields();
+
+        // Show modal
+        modal.style.display = 'flex';
+    }
+
+    function closeEditModal() {
+        const modal = document.getElementById('editModal');
+        modal.style.display = 'none';
+        currentEditDomainId = null;
+    }
+
+    // Toggle edit form fields
+    const editCustomDomainRadio = document.getElementById('edit_custom_domain');
+    const editTempDomainRadio = document.getElementById('edit_temp_domain');
+    const editCustomDomainField = document.getElementById('edit_custom_domain_field');
+    const editTempDomainField = document.getElementById('edit_temp_domain_field');
+    const editCustomDomainInput = document.getElementById('edit_custom_domain_input');
+    const editStoreNameInput = document.getElementById('edit_store_name');
+
+    function toggleEditDomainFields() {
+        if (editCustomDomainRadio.checked) {
+            editCustomDomainField.style.display = 'block';
+            editTempDomainField.style.display = 'none';
+            editCustomDomainInput.required = true;
+            editStoreNameInput.required = false;
+        } else {
+            editCustomDomainField.style.display = 'none';
+            editTempDomainField.style.display = 'block';
+            editCustomDomainInput.required = false;
+            editStoreNameInput.required = true;
+        }
+    }
+
+    editCustomDomainRadio.addEventListener('change', toggleEditDomainFields);
+    editTempDomainRadio.addEventListener('change', toggleEditDomainFields);
+
+    // Update edit label dynamically as user types
+    const editStoreNameLabel = document.getElementById('edit_store_name_label');
+    editStoreNameInput.addEventListener('input', function () {
+        if (this.value.trim()) {
+            editStoreNameLabel.textContent = 'اسم المتجر: ' + this.value + '.tejara.ps';
+        } else {
+            editStoreNameLabel.textContent = 'اسم المتجر';
+        }
+    });
+
+    // Edit form validation
+    document.getElementById('editDomainForm').addEventListener('submit', function (e) {
+        const domainType = document.querySelector('#editDomainForm input[name="domain_type"]:checked').value;
+        const socialMediaUrlInput = document.getElementById('edit_social_media_url');
+        let socialMediaUrl = socialMediaUrlInput.value.trim();
+
+        // Normalize URL: add https:// if protocol is missing
+        if (socialMediaUrl && !socialMediaUrl.startsWith('http://') && !socialMediaUrl.startsWith('https://')) {
+            socialMediaUrl = 'https://' + socialMediaUrl;
+            socialMediaUrlInput.value = socialMediaUrl;
+        }
+
+        // Validate social media URL
+        const urlPattern = /^https?:\/\/[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*(\/.*)?$/;
+        if (!urlPattern.test(socialMediaUrl)) {
+            e.preventDefault();
+            alert('رابط السوشيال ميديا غير صحيح');
+            return;
+        }
+
+        if (domainType === 'temporary') {
+            const storeName = document.getElementById('edit_store_name').value;
+            // DNS-compliant validation: only English letters, numbers, and hyphens
+            // Must start and end with alphanumeric, max 63 characters
+            const pattern = /^[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]$|^[a-zA-Z0-9]$/;
+
+            if (storeName.length > 63) {
+                e.preventDefault();
+                alert('اسم المتجر يجب أن يكون أقل من 63 حرف');
+                return;
+            }
+
+            if (!pattern.test(storeName)) {
+                e.preventDefault();
+                alert('اسم المتجر يجب أن يحتوي على أحرف إنجليزية وأرقام وشرطات فقط (لا يمكن استخدام أحرف عربية)');
+                return;
+            }
+        } else if (domainType === 'custom') {
+            const customDomain = document.getElementById('edit_custom_domain_input').value;
+            if (!customDomain || customDomain.trim() === '') {
+                e.preventDefault();
+                alert('يرجى إدخال الدومين الخاص بك');
+                return;
+            }
+        }
+    });
+
+    // Close modal when clicking outside
+    window.addEventListener('click', function (event) {
+        const modal = document.getElementById('editModal');
+        if (event.target === modal) {
+            closeEditModal();
+        }
+    });
+
+    // Subscribe button handler
+    function subscribeDomain(domainId) {
+        // Redirect to subscription page
+        window.location.href = '/subscribe/' + domainId;
+    }
+</script>
+{% endblock %}
