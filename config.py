@@ -41,3 +41,13 @@ DATABASE_PATH = os.getenv(
 ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
 DEBUG = os.getenv("DEBUG", "true").lower() == "true"
 
+# SMS Configuration (Hadara SMS Service)
+SMS_API_KEY = os.getenv(
+    "SMS_API_KEY",
+    "452E815F906B6BD877B6C5F294F244F4"  # Default API key
+)
+
+SMS_API_URL = os.getenv(
+    "SMS_API_URL",
+    "http://smsservice.hadara.ps:4545/SMS.ashx/bulkservice/sessionvalue/sendmessage/"
+)

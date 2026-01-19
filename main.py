@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 
 from database import init_db, get_db
 from models import User, Domain, OTPSession
-from config import RECAPTCHA_SITE_KEY, RECAPTCHA_SECRET_KEY, RECAPTCHA_VERIFY_URL, SESSION_SECRET_KEY, ENVIRONMENT
+from config import RECAPTCHA_SITE_KEY, RECAPTCHA_SECRET_KEY, RECAPTCHA_VERIFY_URL, SESSION_SECRET_KEY, ENVIRONMENT, SMS_API_KEY, SMS_API_URL
 
 app = FastAPI()
 
@@ -81,13 +81,34 @@ def normalize_and_validate_url(url: str) -> tuple[bool, str]:
 def generate_otp() -> str:
     return str(random.randint(100000, 999999))
 
-# Helper function to send SMS (placeholder for production)
+# Helper function to send SMS
 def send_sms(mobile_number: str, message: str) -> bool:
-    """Send SMS to mobile number"""
+    """Send SMS to mobile number using Hadara SMS service"""
     if ENVIRONMENT == "production":
-        print(f"[PRODUCTION] SMS would be sent to {mobile_number}: {message}")
-        return True
+        try:
+            # Prepare the API request
+            params = {
+                'apikey': SMS_API_KEY,
+                'to': mobile_number,
+                'msg': message
+            }
+            
+            # Send the SMS via Hadara API
+            response = requests.get(SMS_API_URL, params=params, timeout=10)
+            
+            # Check if request was successful
+            if response.status_code == 200:
+                print(f"[PRODUCTION] SMS sent successfully to {mobile_number}")
+                return True
+            else:
+                print(f"[PRODUCTION] SMS failed to {mobile_number}. Status: {response.status_code}, Response: {response.text}")
+                return False
+                
+        except Exception as e:
+            print(f"[PRODUCTION] SMS error to {mobile_number}: {e}")
+            return False
     else:
+        # Development mode - just log the message
         print(f"[DEVELOPMENT] SMS simulation to {mobile_number}: {message}")
         return True
 
@@ -177,6 +198,26 @@ async def register(
             {
                 "request": request,
                 "error": "كلمة المرور يجب أن تكون 8 أحرف على الأقل"
+            }
+        )
+    
+    if len(password) > 60:
+        return templates.TemplateResponse(
+            "register.html",
+            {
+                "request": request,
+                "error": "كلمة المرور يجب أن لا تتجاوز 60 حرف"
+            }
+        )
+    
+    # Validate password contains only allowed characters
+    password_pattern = r'^[A-Za-z0-9!@#$%^&*()_+\-=\[\]{};\':"\\|,.<>\/?]+$'
+    if not re.match(password_pattern, password):
+        return templates.TemplateResponse(
+            "register.html",
+            {
+                "request": request,
+                "error": "كلمة المرور يجب أن تحتوي على أحرف إنجليزية وأرقام ورموز فقط"
             }
         )
     
