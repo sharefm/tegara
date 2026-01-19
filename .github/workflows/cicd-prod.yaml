@@ -27,7 +27,7 @@ jobs:
         uses: docker/login-action@v3
         with:
           username: ${{ env.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_SECRET }}
+          password: ${{ secrets.DOCKER_TOKEN_PROD }}
       
       - name: Generate timestamp
         id: timestamp
