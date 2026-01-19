@@ -11,6 +11,7 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     mobile_number = Column(String, unique=True, nullable=False, index=True)
     password_hash = Column(String, nullable=False)
+    business_name = Column(String, nullable=False)  # Company/Store/Page name
     verified = Column(Integer, default=0)  # 0 = not verified, 1 = SMS verified
     created_at = Column(DateTime, default=datetime.utcnow)
     

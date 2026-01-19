@@ -144,6 +144,7 @@ async def register_page(request: Request):
 async def register(
     request: Request,
     mobile_number: str = Form(...),
+    business_name: str = Form(...),
     password: str = Form(...),
     confirm_password: str = Form(...),
     db: Session = Depends(get_db),
@@ -210,6 +211,7 @@ async def register(
     
     # Store registration data in session
     request.session["pending_mobile"] = mobile_number
+    request.session["pending_business_name"] = business_name
     request.session["pending_password"] = hash_password(password)
     
     return RedirectResponse(url="/verify-sms", status_code=303)
@@ -248,9 +250,10 @@ async def verify_sms(
     db: Session = Depends(get_db)
 ):
     mobile_number = request.session.get("pending_mobile")
+    business_name = request.session.get("pending_business_name")
     password_hash = request.session.get("pending_password")
     
-    if not mobile_number or not password_hash:
+    if not mobile_number or not business_name or not password_hash:
         return RedirectResponse(url="/register")
     
     # Check OTP
@@ -273,6 +276,7 @@ async def verify_sms(
     # Create user account
     new_user = User(
         mobile_number=mobile_number,
+        business_name=business_name,
         password_hash=password_hash,
         verified=1
     )
@@ -285,6 +289,7 @@ async def verify_sms(
     
     # Clear pending session data
     request.session.pop("pending_mobile", None)
+    request.session.pop("pending_business_name", None)
     request.session.pop("pending_password", None)
     
     # Redirect to login with success message
