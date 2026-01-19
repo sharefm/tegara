@@ -41,6 +41,10 @@
         <div class="alert alert-error">
             الدومين غير موجود
         </div>
+        {% elif request.query_params.get('error') == 'invalid_url' %}
+        <div class="alert alert-error">
+            رابط السوشيال ميديا غير صحيح
+        </div>
         {% endif %}
 
         <h2 style="margin-bottom: 20px; color: var(--text-dark);">إضافة دومين جديد</h2>
@@ -71,14 +75,14 @@
                     <span class="domain-suffix">.tejara.ps</span>
                     <span class="domain-dot">.</span>
                     <input type="text" id="store_name" name="store_name" placeholder="my-store"
-                        pattern="[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]|[a-zA-Z0-9]"
-                        title="يجب أن يحتوي على أحرف إنجليزية وأرقام وشرطات فقط">
+                        pattern="[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]|[a-zA-Z0-9]" maxlength="63"
+                        title="يجب أن يحتوي على أحرف إنجليزية وأرقام وشرطات فقط (لا يمكن استخدام أحرف عربية)">
                 </div>
             </div>
 
             <div class="form-group">
                 <label for="social_media_url">رابط المتجر على السوشيال ميديا</label>
-                <input type="url" id="social_media_url" name="social_media_url"
+                <input type="text" id="social_media_url" name="social_media_url"
                     placeholder="https://facebook.com/mystore" required>
             </div>
 
@@ -192,14 +196,14 @@
                     <span class="domain-suffix">.tejara.ps</span>
                     <span class="domain-dot">.</span>
                     <input type="text" id="edit_store_name" name="store_name" placeholder="my-store"
-                        pattern="[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]|[a-zA-Z0-9]"
-                        title="يجب أن يحتوي على أحرف إنجليزية وأرقام وشرطات فقط">
+                        pattern="[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]|[a-zA-Z0-9]" maxlength="63"
+                        title="يجب أن يحتوي على أحرف إنجليزية وأرقام وشرطات فقط (لا يمكن استخدام أحرف عربية)">
                 </div>
             </div>
 
             <div class="form-group">
                 <label for="edit_social_media_url">رابط المتجر على السوشيال ميديا</label>
-                <input type="url" id="edit_social_media_url" name="social_media_url"
+                <input type="text" id="edit_social_media_url" name="social_media_url"
                     placeholder="https://facebook.com/mystore" required>
             </div>
 
@@ -252,14 +256,38 @@
     // Client-side validation
     document.getElementById('addDomainForm').addEventListener('submit', function (e) {
         const domainType = document.querySelector('input[name="domain_type"]:checked').value;
+        const socialMediaUrlInput = document.getElementById('social_media_url');
+        let socialMediaUrl = socialMediaUrlInput.value.trim();
+
+        // Normalize URL: add https:// if protocol is missing
+        if (socialMediaUrl && !socialMediaUrl.startsWith('http://') && !socialMediaUrl.startsWith('https://')) {
+            socialMediaUrl = 'https://' + socialMediaUrl;
+            socialMediaUrlInput.value = socialMediaUrl;
+        }
+
+        // Validate social media URL
+        const urlPattern = /^https?:\/\/[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*(\/.*)?$/;
+        if (!urlPattern.test(socialMediaUrl)) {
+            e.preventDefault();
+            alert('رابط السوشيال ميديا غير صحيح');
+            return;
+        }
 
         if (domainType === 'temporary') {
             const storeName = document.getElementById('store_name').value;
+            // DNS-compliant validation: only English letters, numbers, and hyphens
+            // Must start and end with alphanumeric, max 63 characters
             const pattern = /^[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]$|^[a-zA-Z0-9]$/;
+
+            if (storeName.length > 63) {
+                e.preventDefault();
+                alert('اسم المتجر يجب أن يكون أقل من 63 حرف');
+                return;
+            }
 
             if (!pattern.test(storeName)) {
                 e.preventDefault();
-                alert('اسم المتجر يجب أن يحتوي على أحرف إنجليزية وأرقام وشرطات فقط');
+                alert('اسم المتجر يجب أن يحتوي على أحرف إنجليزية وأرقام وشرطات فقط (لا يمكن استخدام أحرف عربية)');
                 return;
             }
         } else if (domainType === 'custom') {
@@ -348,14 +376,38 @@
     // Edit form validation
     document.getElementById('editDomainForm').addEventListener('submit', function (e) {
         const domainType = document.querySelector('#editDomainForm input[name="domain_type"]:checked').value;
+        const socialMediaUrlInput = document.getElementById('edit_social_media_url');
+        let socialMediaUrl = socialMediaUrlInput.value.trim();
+
+        // Normalize URL: add https:// if protocol is missing
+        if (socialMediaUrl && !socialMediaUrl.startsWith('http://') && !socialMediaUrl.startsWith('https://')) {
+            socialMediaUrl = 'https://' + socialMediaUrl;
+            socialMediaUrlInput.value = socialMediaUrl;
+        }
+
+        // Validate social media URL
+        const urlPattern = /^https?:\/\/[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*(\/.*)?$/;
+        if (!urlPattern.test(socialMediaUrl)) {
+            e.preventDefault();
+            alert('رابط السوشيال ميديا غير صحيح');
+            return;
+        }
 
         if (domainType === 'temporary') {
             const storeName = document.getElementById('edit_store_name').value;
+            // DNS-compliant validation: only English letters, numbers, and hyphens
+            // Must start and end with alphanumeric, max 63 characters
             const pattern = /^[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]$|^[a-zA-Z0-9]$/;
+
+            if (storeName.length > 63) {
+                e.preventDefault();
+                alert('اسم المتجر يجب أن يكون أقل من 63 حرف');
+                return;
+            }
 
             if (!pattern.test(storeName)) {
                 e.preventDefault();
-                alert('اسم المتجر يجب أن يحتوي على أحرف إنجليزية وأرقام وشرطات فقط');
+                alert('اسم المتجر يجب أن يحتوي على أحرف إنجليزية وأرقام وشرطات فقط (لا يمكن استخدام أحرف عربية)');
                 return;
             }
         } else if (domainType === 'custom') {

@@ -45,11 +45,37 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     hashed_bytes = hashed_password.encode('utf-8')
     return bcrypt.checkpw(password_bytes, hashed_bytes)
 
-# Helper function to validate domain name pattern
+# Helper function to validate domain name pattern (DNS record)
 def validate_domain_name(domain_name: str) -> bool:
-    """Validate domain name (alphanumeric and hyphens only)"""
+    """Validate domain name as a valid DNS record (English alphanumeric and hyphens only)"""
+    # Must be 1-63 characters
+    if not domain_name or len(domain_name) > 63:
+        return False
+    # Must start and end with alphanumeric, can contain hyphens in between
+    # Only English letters and numbers allowed (no Arabic or other characters)
     pattern = r'^[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]$|^[a-zA-Z0-9]$'
     return bool(re.match(pattern, domain_name))
+
+# Helper function to normalize and validate URL
+def normalize_and_validate_url(url: str) -> tuple[bool, str]:
+    """
+    Normalize and validate URL. Automatically adds https:// if protocol is missing.
+    Returns: (is_valid, normalized_url)
+    """
+    if not url or not url.strip():
+        return False, ""
+    
+    url = url.strip()
+    
+    # If URL doesn't start with http:// or https://, add https://
+    if not url.startswith(('http://', 'https://')):
+        url = 'https://' + url
+    
+    # URL pattern that checks for http/https protocol and valid domain structure
+    url_pattern = r'^https?://[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*(/.*)?$'
+    is_valid = bool(re.match(url_pattern, url))
+    
+    return is_valid, url if is_valid else ""
 
 # Helper function to generate OTP
 def generate_otp() -> str:
@@ -362,6 +388,11 @@ async def add_domain(
     
     user_id = request.session.get("user_id")
     
+    # Normalize and validate social media URL
+    is_valid_url, normalized_url = normalize_and_validate_url(social_media_url)
+    if not is_valid_url:
+        return RedirectResponse(url="/dashboard?error=invalid_url", status_code=303)
+    
     # Determine domain name based on type
     if domain_type == "custom":
         domain_name = custom_domain_input
@@ -383,7 +414,7 @@ async def add_domain(
         user_id=user_id,
         domain_name=domain_name,
         domain_type=domain_type,
-        social_media_url=social_media_url,
+        social_media_url=normalized_url,
         subscription_status='trial',
         expiry_date=expiry_date
     )
@@ -439,6 +470,11 @@ async def edit_domain(
     if not domain:
         return RedirectResponse(url="/dashboard?error=domain_not_found", status_code=303)
     
+    # Normalize and validate social media URL
+    is_valid_url, normalized_url = normalize_and_validate_url(social_media_url)
+    if not is_valid_url:
+        return RedirectResponse(url="/dashboard?error=invalid_url", status_code=303)
+    
     # Determine new domain name based on type
     if domain_type == "custom":
         new_domain_name = custom_domain_input
@@ -461,7 +497,7 @@ async def edit_domain(
     # Update domain
     domain.domain_name = new_domain_name
     domain.domain_type = domain_type
-    domain.social_media_url = social_media_url
+    domain.social_media_url = normalized_url
     db.commit()
     
     return RedirectResponse(url="/dashboard?success=domain_updated", status_code=303)
