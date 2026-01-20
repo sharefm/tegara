@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Request, Form, Depends, HTTPException
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
@@ -15,7 +15,8 @@ from models import User, Domain, OTPSession
 from config import (
     RECAPTCHA_SITE_KEY, RECAPTCHA_SECRET_KEY, RECAPTCHA_VERIFY_URL, 
     SESSION_SECRET_KEY, ENVIRONMENT, SMS_API_KEY, SMS_API_URL,
-    CLOUDFLARE_API_TOKEN, CLOUDFLARE_ZONE_ID, CLOUDFLARE_TARGET_IP
+    CLOUDFLARE_API_TOKEN, CLOUDFLARE_ZONE_ID, CLOUDFLARE_TARGET_IP,
+    API_KEY
 )
 
 app = FastAPI()
@@ -195,6 +196,25 @@ def verify_recaptcha(recaptcha_response: str, min_score: float = 0.5) -> bool:
     except Exception as e:
         print(f"reCAPTCHA verification error: {e}")
         return False
+
+# Helper function to verify API key
+async def verify_api_key(request: Request):
+    """Verify API key from request header"""
+    api_key = request.headers.get("X-API-Key")
+    
+    if not API_KEY:
+        raise HTTPException(
+            status_code=500,
+            detail="API key not configured on server"
+        )
+    
+    if not api_key or api_key != API_KEY:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid or missing API key"
+        )
+    
+    return True
 
 # ============================================================================
 # ROUTES
@@ -855,3 +875,40 @@ async def logout(request: Request):
 async def health_check():
     """Health check endpoint for Docker and monitoring"""
     return {"status": "healthy", "service": "tegara"}
+
+@app.get("/api/domains")
+async def get_all_domains(
+    request: Request,
+    db: Session = Depends(get_db),
+    authenticated: bool = Depends(verify_api_key)
+):
+    """
+    API endpoint to get all domains with their status and URLs
+    Requires X-API-Key header for authentication
+    
+    Returns JSON array of domains with:
+    - domain_name: The domain/subdomain
+    - subscription_status: trial/active/expired
+    - social_media_url: The redirect URL
+    - is_active: true or false
+    - expiry_date: ISO format date
+    - created_at: ISO format date
+    """
+    domains = db.query(Domain).all()
+    
+    result = []
+    for domain in domains:
+        result.append({
+            "domain_name": domain.domain_name,
+            "subscription_status": domain.subscription_status,
+            "social_media_url": domain.social_media_url,
+            "is_active": domain.is_active == 1,
+            "expiry_date": domain.expiry_date.isoformat() if domain.expiry_date else None,
+            "created_at": domain.created_at.isoformat() if domain.created_at else None
+        })
+    
+    return JSONResponse(content={
+        "success": True,
+        "count": len(result),
+        "domains": result
+    })

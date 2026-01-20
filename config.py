@@ -67,3 +67,9 @@ CLOUDFLARE_TARGET_IP = os.getenv(
     "CLOUDFLARE_TARGET_IP",
     "37.27.245.226"  # IP address to point subdomains to
 )
+
+# API Authentication
+API_KEY = os.getenv(
+    "API_KEY",
+    ""  # Must be set for API endpoints to work
+)
