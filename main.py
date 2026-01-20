@@ -12,7 +12,11 @@ from datetime import datetime, timedelta
 
 from database import init_db, get_db
 from models import User, Domain, OTPSession
-from config import RECAPTCHA_SITE_KEY, RECAPTCHA_SECRET_KEY, RECAPTCHA_VERIFY_URL, SESSION_SECRET_KEY, ENVIRONMENT, SMS_API_KEY, SMS_API_URL
+from config import (
+    RECAPTCHA_SITE_KEY, RECAPTCHA_SECRET_KEY, RECAPTCHA_VERIFY_URL, 
+    SESSION_SECRET_KEY, ENVIRONMENT, SMS_API_KEY, SMS_API_URL,
+    CLOUDFLARE_API_TOKEN, CLOUDFLARE_ZONE_ID, CLOUDFLARE_TARGET_IP
+)
 
 app = FastAPI()
 
@@ -111,6 +115,56 @@ def send_sms(mobile_number: str, message: str) -> bool:
         # Development mode - just log the message
         print(f"[DEVELOPMENT] SMS simulation to {mobile_number}: {message}")
         return True
+
+# Helper function to create DNS record in Cloudflare
+def create_dns_record(subdomain: str) -> bool:
+    """
+    Create an A record in Cloudflare for a tejara.ps subdomain
+    subdomain should be like 'my-store' (without .tejara.ps)
+    """
+    if not CLOUDFLARE_API_TOKEN or not CLOUDFLARE_ZONE_ID:
+        print(f"[WARNING] Cloudflare credentials not configured. Skipping DNS record creation for {subdomain}.tejara.ps")
+        return False
+    
+    try:
+        # Cloudflare API endpoint for DNS records
+        url = f"https://api.cloudflare.com/client/v4/zones/{CLOUDFLARE_ZONE_ID}/dns_records"
+        
+        # Headers with API token
+        headers = {
+            "Authorization": f"Bearer {CLOUDFLARE_API_TOKEN}",
+            "Content-Type": "application/json"
+        }
+        
+        # DNS record data
+        data = {
+            "type": "A",
+            "name": subdomain,  # Just the subdomain part (e.g., 'my-store')
+            "content": CLOUDFLARE_TARGET_IP,
+            "ttl": 1,  # Auto TTL
+            "proxied": False  # Set to True if you want Cloudflare proxy
+        }
+        
+        # Create the DNS record
+        response = requests.post(url, headers=headers, json=data, timeout=10)
+        
+        # Check response
+        if response.status_code == 200:
+            result = response.json()
+            if result.get("success"):
+                print(f"[SUCCESS] DNS A record created: {subdomain}.tejara.ps -> {CLOUDFLARE_TARGET_IP}")
+                return True
+            else:
+                errors = result.get("errors", [])
+                print(f"[ERROR] Cloudflare API error for {subdomain}.tejara.ps: {errors}")
+                return False
+        else:
+            print(f"[ERROR] Cloudflare API request failed for {subdomain}.tejara.ps. Status: {response.status_code}, Response: {response.text}")
+            return False
+            
+    except Exception as e:
+        print(f"[ERROR] Exception creating DNS record for {subdomain}.tejara.ps: {e}")
+        return False
 
 # Helper function to verify reCAPTCHA v3
 def verify_recaptcha(recaptcha_response: str, min_score: float = 0.5) -> bool:
@@ -247,7 +301,7 @@ async def register(
     db.commit()
     
     # Send OTP via SMS
-    sms_message = f"رمز التحقق الخاص بك في تجارة: {otp_code}"
+    sms_message = f"رمز التحقق الخاص بك في في بوابة التجارة الالكترونية tejara.ps: {otp_code}"
     send_sms(mobile_number, sms_message)
     
     # Store registration data in session
@@ -466,6 +520,14 @@ async def add_domain(
     )
     db.add(new_domain)
     db.commit()
+    
+    # If it's a temporary domain (tejara.ps subdomain), create DNS record in Cloudflare
+    if domain_type == "temporary":
+        # Extract subdomain (e.g., 'my-store' from 'my-store.tejara.ps')
+        subdomain = store_name
+        create_dns_record(subdomain)
+        # Note: We don't fail the domain creation if DNS fails
+        # The domain is still created in our database
     
     return RedirectResponse(url="/dashboard?success=domain_added", status_code=303)
 

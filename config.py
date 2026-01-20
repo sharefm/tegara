@@ -51,3 +51,19 @@ SMS_API_URL = os.getenv(
     "SMS_API_URL",
     "http://smsservice.hadara.ps:4545/SMS.ashx/bulkservice/sessionvalue/sendmessage/"
 )
+
+# Cloudflare DNS Configuration
+CLOUDFLARE_API_TOKEN = os.getenv(
+    "CLOUDFLARE_API_TOKEN",
+    ""  # Must be set in production
+)
+
+CLOUDFLARE_ZONE_ID = os.getenv(
+    "CLOUDFLARE_ZONE_ID",
+    ""  # Zone ID for tejara.ps domain
+)
+
+CLOUDFLARE_TARGET_IP = os.getenv(
+    "CLOUDFLARE_TARGET_IP",
+    "37.27.245.226"  # IP address to point subdomains to
+)
