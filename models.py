@@ -13,6 +13,7 @@ class User(Base):
     password_hash = Column(String, nullable=False)
     business_name = Column(String, nullable=False)  # Company/Store/Page name
     verified = Column(Integer, default=0)  # 0 = not verified, 1 = SMS verified
+    password_reset_count = Column(Integer, default=0)  # Track password reset attempts
     created_at = Column(DateTime, default=datetime.utcnow)
     
     # Relationship to domains

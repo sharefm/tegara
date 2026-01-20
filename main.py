@@ -397,7 +397,13 @@ async def verify_sms(
 @app.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request):
     registered = request.query_params.get("registered")
-    success_message = "تم التسجيل بنجاح! يمكنك الآن تسجيل الدخول" if registered else None
+    password_reset = request.query_params.get("password_reset")
+    
+    success_message = None
+    if registered:
+        success_message = "تم التسجيل بنجاح! يمكنك الآن تسجيل الدخول"
+    elif password_reset:
+        success_message = "تم تغيير كلمة المرور بنجاح! يمكنك الآن تسجيل الدخول"
     
     return templates.TemplateResponse(
         "login.html",
@@ -443,6 +449,207 @@ async def login(
     request.session["mobile_number"] = user.mobile_number
     
     return RedirectResponse(url="/dashboard", status_code=303)
+
+# ============================================================================
+# PASSWORD RESET FLOW
+# ============================================================================
+
+@app.get("/forgot-password", response_class=HTMLResponse)
+async def forgot_password_page(request: Request):
+    return templates.TemplateResponse("forgot_password.html", {"request": request})
+
+@app.post("/forgot-password")
+async def forgot_password(
+    request: Request,
+    mobile_number: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    # Check if user exists
+    user = db.query(User).filter(User.mobile_number == mobile_number).first()
+    
+    if not user:
+        return templates.TemplateResponse(
+            "forgot_password.html",
+            {
+                "request": request,
+                "error": "رقم الهاتف غير مسجل"
+            }
+        )
+    
+    # Check if user has exceeded reset limit (5 attempts)
+    if user.password_reset_count >= 5:
+        return RedirectResponse(url="/reset-password-blocked", status_code=303)
+    
+    # Generate OTP
+    otp_code = generate_otp()
+    
+    # Delete any existing OTP sessions for this mobile
+    db.query(OTPSession).filter(OTPSession.mobile_number == mobile_number).delete()
+    
+    # Create new OTP session
+    otp_session = OTPSession(
+        mobile_number=mobile_number,
+        otp_code=otp_code
+    )
+    db.add(otp_session)
+    db.commit()
+    
+    # Send OTP via SMS
+    sms_message = f"رمز إعادة تعيين كلمة المرور في بوابة التجارة الالكترونية tejara.ps: {otp_code}"
+    send_sms(mobile_number, sms_message)
+    
+    # Store mobile in session for verification
+    request.session["reset_mobile"] = mobile_number
+    
+    return RedirectResponse(url="/reset-password-verify", status_code=303)
+
+@app.get("/reset-password-verify", response_class=HTMLResponse)
+async def reset_password_verify_page(request: Request, db: Session = Depends(get_db)):
+    mobile_number = request.session.get("reset_mobile")
+    
+    if not mobile_number:
+        return RedirectResponse(url="/forgot-password")
+    
+    # Get the OTP session
+    otp_session = db.query(OTPSession).filter(
+        OTPSession.mobile_number == mobile_number
+    ).first()
+    
+    # Only show OTP on screen in development mode
+    otp_code = None
+    if ENVIRONMENT == "development" and otp_session:
+        otp_code = otp_session.otp_code
+    
+    return templates.TemplateResponse(
+        "reset_password_verify.html",
+        {
+            "request": request,
+            "otp_code": otp_code,
+            "mobile_number": mobile_number
+        }
+    )
+
+@app.post("/reset-password-verify")
+async def reset_password_verify(
+    request: Request,
+    otp_code: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    mobile_number = request.session.get("reset_mobile")
+    
+    if not mobile_number:
+        return RedirectResponse(url="/forgot-password")
+    
+    # Check OTP
+    otp_session = db.query(OTPSession).filter(
+        OTPSession.mobile_number == mobile_number,
+        OTPSession.otp_code == otp_code
+    ).first()
+    
+    if not otp_session:
+        return templates.TemplateResponse(
+            "reset_password_verify.html",
+            {
+                "request": request,
+                "error": "رمز التحقق غير صحيح",
+                "mobile_number": mobile_number
+            }
+        )
+    
+    # Mark OTP as verified
+    otp_session.verified = 1
+    db.commit()
+    
+    # Set session flag that OTP is verified
+    request.session["reset_verified"] = True
+    
+    return RedirectResponse(url="/reset-password-new", status_code=303)
+
+@app.get("/reset-password-new", response_class=HTMLResponse)
+async def reset_password_new_page(request: Request):
+    # Check if user has verified OTP
+    if not request.session.get("reset_verified"):
+        return RedirectResponse(url="/forgot-password")
+    
+    return templates.TemplateResponse("reset_password_new.html", {"request": request})
+
+@app.post("/reset-password-new")
+async def reset_password_new(
+    request: Request,
+    password: str = Form(...),
+    confirm_password: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    # Check if user has verified OTP
+    if not request.session.get("reset_verified"):
+        return RedirectResponse(url="/forgot-password")
+    
+    mobile_number = request.session.get("reset_mobile")
+    
+    if not mobile_number:
+        return RedirectResponse(url="/forgot-password")
+    
+    # Validate passwords match
+    if password != confirm_password:
+        return templates.TemplateResponse(
+            "reset_password_new.html",
+            {
+                "request": request,
+                "error": "كلمات المرور غير متطابقة"
+            }
+        )
+    
+    # Validate password length
+    if len(password) < 8:
+        return templates.TemplateResponse(
+            "reset_password_new.html",
+            {
+                "request": request,
+                "error": "كلمة المرور يجب أن تكون 8 أحرف على الأقل"
+            }
+        )
+    
+    if len(password) > 60:
+        return templates.TemplateResponse(
+            "reset_password_new.html",
+            {
+                "request": request,
+                "error": "كلمة المرور يجب أن لا تتجاوز 60 حرف"
+            }
+        )
+    
+    # Validate password contains only allowed characters
+    password_pattern = r'^[A-Za-z0-9!@#$%^&*()_+\-=\[\]{};\':"\\|,.<>/?]+$'
+    if not re.match(password_pattern, password):
+        return templates.TemplateResponse(
+            "reset_password_new.html",
+            {
+                "request": request,
+                "error": "كلمة المرور يجب أن تحتوي على أحرف إنجليزية وأرقام ورموز فقط"
+            }
+        )
+    
+    # Get user and update password
+    user = db.query(User).filter(User.mobile_number == mobile_number).first()
+    
+    if not user:
+        return RedirectResponse(url="/forgot-password")
+    
+    # Update password and increment reset count
+    user.password_hash = hash_password(password)
+    user.password_reset_count += 1
+    db.commit()
+    
+    # Clear session
+    request.session.pop("reset_mobile", None)
+    request.session.pop("reset_verified", None)
+    
+    # Redirect to login with success message
+    return RedirectResponse(url="/login?password_reset=true", status_code=303)
+
+@app.get("/reset-password-blocked", response_class=HTMLResponse)
+async def reset_password_blocked_page(request: Request):
+    return templates.TemplateResponse("reset_password_blocked.html", {"request": request})
 
 # ============================================================================
 # DASHBOARD
