@@ -167,6 +167,66 @@ def create_dns_record(subdomain: str) -> bool:
         print(f"[ERROR] Exception creating DNS record for {subdomain}.tejara.ps: {e}")
         return False
 
+# Helper function to delete DNS record from Cloudflare
+def delete_dns_record(subdomain: str) -> bool:
+    """
+    Delete an A record from Cloudflare for a tejara.ps subdomain
+    subdomain should be like 'my-store' (without .tejara.ps)
+    """
+    if not CLOUDFLARE_API_TOKEN or not CLOUDFLARE_ZONE_ID:
+        print(f"[WARNING] Cloudflare credentials not configured. Skipping DNS record deletion for {subdomain}.tejara.ps")
+        return False
+    
+    try:
+        # First, find the DNS record ID
+        list_url = f"https://api.cloudflare.com/client/v4/zones/{CLOUDFLARE_ZONE_ID}/dns_records"
+        headers = {
+            "Authorization": f"Bearer {CLOUDFLARE_API_TOKEN}",
+            "Content-Type": "application/json"
+        }
+        
+        # Search for the record by name
+        params = {
+            "type": "A",
+            "name": f"{subdomain}.tejara.ps"
+        }
+        
+        response = requests.get(list_url, headers=headers, params=params, timeout=10)
+        
+        if response.status_code == 200:
+            result = response.json()
+            if result.get("success") and result.get("result"):
+                # Get the first matching record
+                record = result["result"][0]
+                record_id = record["id"]
+                
+                # Delete the record
+                delete_url = f"https://api.cloudflare.com/client/v4/zones/{CLOUDFLARE_ZONE_ID}/dns_records/{record_id}"
+                delete_response = requests.delete(delete_url, headers=headers, timeout=10)
+                
+                if delete_response.status_code == 200:
+                    delete_result = delete_response.json()
+                    if delete_result.get("success"):
+                        print(f"[SUCCESS] DNS A record deleted: {subdomain}.tejara.ps")
+                        return True
+                    else:
+                        errors = delete_result.get("errors", [])
+                        print(f"[ERROR] Cloudflare API error deleting {subdomain}.tejara.ps: {errors}")
+                        return False
+                else:
+                    print(f"[ERROR] Failed to delete DNS record for {subdomain}.tejara.ps. Status: {delete_response.status_code}")
+                    return False
+            else:
+                print(f"[WARNING] DNS record not found for {subdomain}.tejara.ps, nothing to delete")
+                return True  # Not an error if record doesn't exist
+        else:
+            print(f"[ERROR] Failed to list DNS records for {subdomain}.tejara.ps. Status: {response.status_code}")
+            return False
+            
+    except Exception as e:
+        print(f"[ERROR] Exception deleting DNS record for {subdomain}.tejara.ps: {e}")
+        return False
+
 # Helper function to verify reCAPTCHA v3
 def verify_recaptcha(recaptcha_response: str, min_score: float = 0.5) -> bool:
     """Verify reCAPTCHA v3 response with Google's API"""
@@ -776,6 +836,12 @@ async def delete_domain(
     ).first()
     
     if domain:
+        # Delete DNS record if it's a temporary domain
+        if domain.domain_type == "temporary" and domain.domain_name.endswith(".tejara.ps"):
+            subdomain = domain.domain_name.replace(".tejara.ps", "")
+            delete_dns_record(subdomain)
+        
+        # Delete domain from database
         db.delete(domain)
         db.commit()
     
@@ -829,7 +895,23 @@ async def edit_domain(
         if existing_domain:
             return RedirectResponse(url="/dashboard?error=domain_exists", status_code=303)
     
-    # Update domain
+    # Handle DNS record changes for temporary domains
+    old_domain_name = domain.domain_name
+    old_domain_type = domain.domain_type
+    
+    # If domain name or type is changing, handle DNS updates
+    if new_domain_name != old_domain_name or domain_type != old_domain_type:
+        # Delete old DNS record if it was a temporary domain
+        if old_domain_type == "temporary" and old_domain_name.endswith(".tejara.ps"):
+            old_subdomain = old_domain_name.replace(".tejara.ps", "")
+            delete_dns_record(old_subdomain)
+        
+        # Create new DNS record if it's a temporary domain
+        if domain_type == "temporary":
+            new_subdomain = store_name
+            create_dns_record(new_subdomain)
+    
+    # Update domain in database
     domain.domain_name = new_domain_name
     domain.domain_type = domain_type
     domain.social_media_url = normalized_url
