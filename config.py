@@ -73,3 +73,9 @@ API_KEY = os.getenv(
     "API_KEY",
     ""  # Must be set for API endpoints to work
 )
+
+# Domain Sync Webhook
+DOMAIN_SYNC_WEBHOOK_URL = os.getenv(
+    "DOMAIN_SYNC_WEBHOOK_URL",
+    ""  # URL to send domain updates to
+)

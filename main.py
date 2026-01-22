@@ -16,7 +16,7 @@ from config import (
     RECAPTCHA_SITE_KEY, RECAPTCHA_SECRET_KEY, RECAPTCHA_VERIFY_URL, 
     SESSION_SECRET_KEY, ENVIRONMENT, SMS_API_KEY, SMS_API_URL,
     CLOUDFLARE_API_TOKEN, CLOUDFLARE_ZONE_ID, CLOUDFLARE_TARGET_IP,
-    API_KEY
+    API_KEY, DOMAIN_SYNC_WEBHOOK_URL
 )
 
 app = FastAPI()
@@ -225,6 +225,56 @@ def delete_dns_record(subdomain: str) -> bool:
             
     except Exception as e:
         print(f"[ERROR] Exception deleting DNS record for {subdomain}.tejara.ps: {e}")
+        return False
+
+# Helper function to sync domains to external webhook
+def sync_domains_to_webhook(db: Session) -> bool:
+    """
+    Send list of active and trial domains to configured webhook URL
+    Only sends domains with subscription_status 'active' or 'trial'
+    """
+    if not DOMAIN_SYNC_WEBHOOK_URL:
+        print("[INFO] Domain sync webhook URL not configured, skipping sync")
+        return False
+    
+    try:
+        # Get all active and trial domains
+        domains = db.query(Domain).filter(
+            Domain.subscription_status.in_(['active', 'trial'])
+        ).all()
+        
+        # Build domain list
+        domain_list = []
+        for domain in domains:
+            domain_list.append({
+                "domain_name": domain.domain_name,
+                "subscription_status": domain.subscription_status,
+                "social_media_url": domain.social_media_url,
+                "is_active": domain.is_active == 1
+            })
+        
+        # Prepare payload
+        payload = {
+            "domains": domain_list
+        }
+        
+        # Send to webhook
+        response = requests.post(
+            DOMAIN_SYNC_WEBHOOK_URL,
+            json=payload,
+            headers={"Content-Type": "application/json"},
+            timeout=10
+        )
+        
+        if response.status_code in [200, 201, 204]:
+            print(f"[SUCCESS] Synced {len(domain_list)} domains to webhook")
+            return True
+        else:
+            print(f"[ERROR] Webhook sync failed. Status: {response.status_code}, Response: {response.text}")
+            return False
+            
+    except Exception as e:
+        print(f"[ERROR] Exception syncing domains to webhook: {e}")
         return False
 
 # Helper function to verify reCAPTCHA v3
@@ -816,6 +866,9 @@ async def add_domain(
         # Note: We don't fail the domain creation if DNS fails
         # The domain is still created in our database
     
+    # Sync domains to webhook
+    sync_domains_to_webhook(db)
+    
     return RedirectResponse(url="/dashboard?success=domain_added", status_code=303)
 
 @app.post("/dashboard/delete-domain/{domain_id}")
@@ -844,6 +897,9 @@ async def delete_domain(
         # Delete domain from database
         db.delete(domain)
         db.commit()
+        
+        # Sync domains to webhook
+        sync_domains_to_webhook(db)
     
     return RedirectResponse(url="/dashboard?success=domain_deleted", status_code=303)
 
@@ -917,6 +973,9 @@ async def edit_domain(
     domain.social_media_url = normalized_url
     db.commit()
     
+    # Sync domains to webhook
+    sync_domains_to_webhook(db)
+    
     return RedirectResponse(url="/dashboard?success=domain_updated", status_code=303)
 
 @app.get("/subscribe/{domain_id}", response_class=HTMLResponse)
@@ -957,40 +1016,3 @@ async def logout(request: Request):
 async def health_check():
     """Health check endpoint for Docker and monitoring"""
     return {"status": "healthy", "service": "tegara"}
-
-@app.get("/api/domains")
-async def get_all_domains(
-    request: Request,
-    db: Session = Depends(get_db),
-    authenticated: bool = Depends(verify_api_key)
-):
-    """
-    API endpoint to get all domains with their status and URLs
-    Requires X-API-Key header for authentication
-    
-    Returns JSON array of domains with:
-    - domain_name: The domain/subdomain
-    - subscription_status: trial/active/expired
-    - social_media_url: The redirect URL
-    - is_active: true or false
-    - expiry_date: ISO format date
-    - created_at: ISO format date
-    """
-    domains = db.query(Domain).all()
-    
-    result = []
-    for domain in domains:
-        result.append({
-            "domain_name": domain.domain_name,
-            "subscription_status": domain.subscription_status,
-            "social_media_url": domain.social_media_url,
-            "is_active": domain.is_active == 1,
-            "expiry_date": domain.expiry_date.isoformat() if domain.expiry_date else None,
-            "created_at": domain.created_at.isoformat() if domain.created_at else None
-        })
-    
-    return JSONResponse(content={
-        "success": True,
-        "count": len(result),
-        "domains": result
-    })
