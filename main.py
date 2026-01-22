@@ -16,7 +16,7 @@ from config import (
     RECAPTCHA_SITE_KEY, RECAPTCHA_SECRET_KEY, RECAPTCHA_VERIFY_URL, 
     SESSION_SECRET_KEY, ENVIRONMENT, SMS_API_KEY, SMS_API_URL,
     CLOUDFLARE_API_TOKEN, CLOUDFLARE_ZONE_ID, CLOUDFLARE_TARGET_IP,
-    API_KEY, DOMAIN_SYNC_WEBHOOK_URL
+    API_KEY, DOMAIN_SYNC_WEBHOOK_URL, DOMAIN_SYNC_WEBHOOK_SECRET
 )
 
 app = FastAPI()
@@ -258,11 +258,20 @@ def sync_domains_to_webhook(db: Session) -> bool:
             "domains": domain_list
         }
         
+        # Prepare headers with authentication
+        headers = {
+            "Content-Type": "application/json"
+        }
+        
+        # Add webhook secret if configured
+        if DOMAIN_SYNC_WEBHOOK_SECRET:
+            headers["X-Webhook-Secret"] = DOMAIN_SYNC_WEBHOOK_SECRET
+        
         # Send to webhook
         response = requests.post(
             DOMAIN_SYNC_WEBHOOK_URL,
             json=payload,
-            headers={"Content-Type": "application/json"},
+            headers=headers,
             timeout=10
         )
         

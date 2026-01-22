@@ -79,3 +79,8 @@ DOMAIN_SYNC_WEBHOOK_URL = os.getenv(
     "DOMAIN_SYNC_WEBHOOK_URL",
     ""  # URL to send domain updates to
 )
+
+DOMAIN_SYNC_WEBHOOK_SECRET = os.getenv(
+    "DOMAIN_SYNC_WEBHOOK_SECRET",
+    ""  # Secret for webhook authentication
+)
