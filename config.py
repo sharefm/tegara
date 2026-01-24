@@ -37,6 +37,14 @@ DATABASE_PATH = os.getenv(
     "data/tejara.db"  # Default for development (data subdirectory)
 )
 
+# PostgreSQL Database URL
+# Format: postgresql://user:password@host:port/database
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    f"sqlite:///{DATABASE_PATH}"  # Fallback to SQLite if not set
+)
+
+
 # Environment
 ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
 DEBUG = os.getenv("DEBUG", "true").lower() == "true"

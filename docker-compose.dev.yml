@@ -1,6 +1,28 @@
 version: '3.8'
 
 services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres-dev
+    environment:
+      POSTGRES_DB: tejara
+      POSTGRES_USER: tejara_user
+      POSTGRES_PASSWORD: tejara_password
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tejara_user -d tejara"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - tegara-network
+
   web:
     image: tejaradev/tejara-dev:dev-latest
     container_name: tegara-dev
@@ -15,6 +37,7 @@ services:
       - .env.dev
     environment:
       - ENVIRONMENT=development
+      - DATABASE_URL=postgresql://tejara_user:tejara_password@postgres:5432/tejara
     command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
     restart: unless-stopped
     healthcheck:
@@ -23,6 +46,9 @@ services:
       timeout: 10s
       retries: 3
       start_period: 10s
+    depends_on:
+      postgres:
+        condition: service_healthy
     networks:
       - tegara-network
 
@@ -59,5 +85,7 @@ networks:
     driver: bridge
 
 volumes:
+  postgres_data:
   data:
   portainer_data:
+

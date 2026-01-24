@@ -1,12 +1,13 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from models import Base
-from config import DATABASE_PATH
-
-SQLALCHEMY_DATABASE_URL = f"sqlite:///{DATABASE_PATH}"
+from config import DATABASE_URL
 
 engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+    DATABASE_URL,
+    pool_pre_ping=True,  # Enable connection health checks
+    pool_size=10,  # Connection pool size
+    max_overflow=20  # Maximum overflow connections
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -20,3 +21,4 @@ def get_db():
         yield db
     finally:
         db.close()
+

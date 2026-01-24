@@ -32,7 +32,9 @@ Thumbs.db
 
 # Docker
 data/
+postgres_data/
 ssl/
+
 
 # Logs
 *.log
