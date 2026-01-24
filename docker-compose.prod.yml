@@ -42,11 +42,13 @@ services:
     volumes:
       # Persist database
       - ./data:/app/data
+      - ./logging.conf:/app/logging.conf:ro
     env_file:
       - .env.prod
     environment:
       - ENVIRONMENT=production
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-tejara}
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --log-config /app/logging.conf --access-log --proxy-headers
     restart: always
     healthcheck:
       test: [ "CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)" ]
