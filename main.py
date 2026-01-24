@@ -16,7 +16,7 @@ from config import (
     RECAPTCHA_SITE_KEY, RECAPTCHA_SECRET_KEY, RECAPTCHA_VERIFY_URL, 
     SESSION_SECRET_KEY, ENVIRONMENT, SMS_API_KEY, SMS_API_URL,
     CLOUDFLARE_API_TOKEN, CLOUDFLARE_ZONE_ID, CLOUDFLARE_TARGET_IP,
-    API_KEY, DOMAIN_SYNC_WEBHOOK_URL, DOMAIN_SYNC_WEBHOOK_SECRET
+    DOMAIN_SYNC_WEBHOOK_URL, DOMAIN_SYNC_WEBHOOK_SECRET
 )
 
 app = FastAPI()
@@ -316,28 +316,10 @@ def verify_recaptcha(recaptcha_response: str, min_score: float = 0.5) -> bool:
         print(f"reCAPTCHA verification error: {e}")
         return False
 
-# Helper function to verify API key
-async def verify_api_key(request: Request):
-    """Verify API key from request header"""
-    api_key = request.headers.get("X-API-Key")
-    
-    if not API_KEY:
-        raise HTTPException(
-            status_code=500,
-            detail="API key not configured on server"
-        )
-    
-    if not api_key or api_key != API_KEY:
-        raise HTTPException(
-            status_code=401,
-            detail="Invalid or missing API key"
-        )
-    
-    return True
-
 # ============================================================================
 # ROUTES
 # ============================================================================
+
 
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):

@@ -55,13 +55,56 @@ jobs:
     steps:
       - name: Deploy to production server
         uses: appleboy/ssh-action@v1.0.3
+        env:
+          POSTGRES_DB: tejara
+          POSTGRES_USER: deploy
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          RECAPTCHA_SITE_KEY: ${{ secrets.RECAPTCHA_SITE_KEY }}
+          RECAPTCHA_SECRET_KEY: ${{ secrets.RECAPTCHA_SECRET_KEY }}
+          SESSION_SECRET_KEY: ${{ secrets.SESSION_SECRET_KEY }}
+          SMS_API_KEY: ${{ secrets.SMS_API_KEY }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          DOMAIN_SYNC_WEBHOOK_SECRET: ${{ secrets.DOMAIN_SYNC_WEBHOOK_SECRET }}
         with:
           host: www.tejara.ps
           username: deploy
           key: ${{ secrets.DEPLOY_SSH_KEY }}
+          envs: POSTGRES_DB,POSTGRES_USER,POSTGRES_PASSWORD,RECAPTCHA_SITE_KEY,RECAPTCHA_SECRET_KEY,SESSION_SECRET_KEY,SMS_API_KEY,CLOUDFLARE_API_TOKEN,CLOUDFLARE_ZONE_ID,DOMAIN_SYNC_WEBHOOK_SECRET
           script: |
             cd tegara
             git pull
+            
+            # Create/Update .env.prod with secrets from GitHub Actions
+            cat > .env.prod << EOF
+            # PostgreSQL Database Credentials
+            POSTGRES_DB=${POSTGRES_DB}
+            POSTGRES_USER=${POSTGRES_USER}
+            POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+            
+            # reCAPTCHA Configuration
+            RECAPTCHA_SITE_KEY=${RECAPTCHA_SITE_KEY}
+            RECAPTCHA_SECRET_KEY=${RECAPTCHA_SECRET_KEY}
+            
+            # Session Secret
+            SESSION_SECRET_KEY=${SESSION_SECRET_KEY}
+            
+            # SMS Configuration
+            SMS_API_KEY=${SMS_API_KEY}
+            
+            # Cloudflare Configuration
+            CLOUDFLARE_API_TOKEN=${CLOUDFLARE_API_TOKEN}
+            CLOUDFLARE_ZONE_ID=${CLOUDFLARE_ZONE_ID}
+            
+            # Webhook Secret
+            DOMAIN_SYNC_WEBHOOK_SECRET=${DOMAIN_SYNC_WEBHOOK_SECRET}
+            
+            # Environment
+            ENVIRONMENT=production
+            DEBUG=false
+            EOF
+            
+            # Deploy containers
             docker compose -f docker-compose.prod.yml down
             docker compose -f docker-compose.prod.yml pull
             docker compose -f docker-compose.prod.yml up -d --force-recreate
