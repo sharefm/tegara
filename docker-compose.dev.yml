@@ -13,9 +13,18 @@ services:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5432:5432"
+    shm_size: 1gb
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 1G
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U tejara_user -d tejara"]
+      test: [ "CMD-SHELL", "pg_isready -U tejara_user -d tejara" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -88,4 +97,5 @@ volumes:
   postgres_data:
   data:
   portainer_data:
+
 
