@@ -48,6 +48,6 @@ CREATE TABLE IF NOT EXISTS otp_sessions (
 -- Create index on mobile_number for faster OTP lookups
 CREATE INDEX IF NOT EXISTS idx_otp_sessions_mobile_number ON otp_sessions(mobile_number);
 
--- Grant privileges to the tejara_user
-GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO tejara_user;
-GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO tejara_user;
+-- Grant privileges to the current database user (works with any POSTGRES_USER)
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO CURRENT_USER;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO CURRENT_USER;
