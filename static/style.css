@@ -61,6 +61,13 @@ body {
     margin-bottom: 30px;
 }
 
+.logo img {
+    max-width: 200px;
+    height: auto;
+    display: block;
+    margin: 0 auto 10px auto;
+}
+
 .logo h1 {
     font-size: 2.5rem;
     font-weight: 700;
