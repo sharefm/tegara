@@ -80,7 +80,7 @@ Open your browser and navigate to: **http://localhost:8000**
 
 ## Tech Stack
 
-- **Backend**: FastAPI, SQLAlchemy, SQLite
+- **Backend**: FastAPI, SQLAlchemy, PostgreSQL
 - **Frontend**: Jinja2, HTML5, CSS3, JavaScript
 - **Design**: Glassmorphism, RTL support, Google Fonts (Cairo)
 

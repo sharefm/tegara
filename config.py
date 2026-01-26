@@ -31,17 +31,11 @@ SESSION_SECRET_KEY = os.getenv(
     "dev-secret-key-change-in-production"  # Default for development
 )
 
-# Database Configuration
-DATABASE_PATH = os.getenv(
-    "DATABASE_PATH",
-    "data/tejara.db"  # Default for development (data subdirectory)
-)
-
 # PostgreSQL Database URL
 # Format: postgresql://user:password@host:port/database
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    f"sqlite:///{DATABASE_PATH}"  # Fallback to SQLite if not set
+    "postgresql://tejara_user:tejara_password@db:5432/tejara_db"  # Default for development
 )
 
 
@@ -76,14 +70,18 @@ CLOUDFLARE_TARGET_IP = os.getenv(
     "37.27.245.226"  # IP address to point subdomains to
 )
 
-# Domain Sync Webhook
-DOMAIN_SYNC_WEBHOOK_URL = os.getenv(
-    "DOMAIN_SYNC_WEBHOOK_URL",
-    ""  # URL to send domain updates to
+# Update Domains API Key
+# Used to authenticate external requests to /update-domains endpoint
+UPDATE_DOMAINS_API_KEY = os.getenv(
+    "UPDATE_DOMAINS_API_KEY",
+    "dev-update-domains-key-change-in-production"  # Default for development
 )
 
-DOMAIN_SYNC_WEBHOOK_SECRET = os.getenv(
-    "DOMAIN_SYNC_WEBHOOK_SECRET",
-    ""  # Secret for webhook authentication
+# Nginx Updater Service URL
+# External service that updates nginx configurations
+NGINX_UPDATER_URL = os.getenv(
+    "NGINX_UPDATER_URL",
+    "http://localhost:8001/update-domains"  # Default for development
 )
+
 

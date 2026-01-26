@@ -16,7 +16,7 @@ from config import (
     RECAPTCHA_SITE_KEY, RECAPTCHA_SECRET_KEY, RECAPTCHA_VERIFY_URL, 
     SESSION_SECRET_KEY, ENVIRONMENT, SMS_API_KEY, SMS_API_URL,
     CLOUDFLARE_API_TOKEN, CLOUDFLARE_ZONE_ID, CLOUDFLARE_TARGET_IP,
-    DOMAIN_SYNC_WEBHOOK_URL, DOMAIN_SYNC_WEBHOOK_SECRET
+    UPDATE_DOMAINS_API_KEY, NGINX_UPDATER_URL
 )
 
 app = FastAPI()
@@ -227,64 +227,7 @@ def delete_dns_record(subdomain: str) -> bool:
         print(f"[ERROR] Exception deleting DNS record for {subdomain}.tejara.ps: {e}")
         return False
 
-# Helper function to sync domains to external webhook
-def sync_domains_to_webhook(db: Session) -> bool:
-    """
-    Send list of active and trial domains to configured webhook URL
-    Only sends domains with subscription_status 'active' or 'trial'
-    """
-    if not DOMAIN_SYNC_WEBHOOK_URL:
-        print("[INFO] Domain sync webhook URL not configured, skipping sync")
-        return False
-    
-    try:
-        # Get all active and trial domains
-        domains = db.query(Domain).filter(
-            Domain.subscription_status.in_(['active', 'trial'])
-        ).all()
-        
-        # Build domain list
-        domain_list = []
-        for domain in domains:
-            domain_list.append({
-                "domain_name": domain.domain_name,
-                "subscription_status": domain.subscription_status,
-                "social_media_url": domain.social_media_url,
-                "is_active": domain.is_active == 1
-            })
-        
-        # Prepare payload
-        payload = {
-            "domains": domain_list
-        }
-        
-        # Prepare headers with authentication
-        headers = {
-            "Content-Type": "application/json"
-        }
-        
-        # Add webhook secret if configured
-        if DOMAIN_SYNC_WEBHOOK_SECRET:
-            headers["X-Webhook-Secret"] = DOMAIN_SYNC_WEBHOOK_SECRET
-        
-        # Send to webhook
-        response = requests.post(
-            DOMAIN_SYNC_WEBHOOK_URL,
-            json=payload,
-            headers=headers,
-            timeout=10
-        )
-        
-        if response.status_code in [200, 201, 204]:
-            print(f"[SUCCESS] Synced {len(domain_list)} domains to webhook")
-            return True
-        else:
-            print(f"[ERROR] Webhook sync failed. Status: {response.status_code}, Response: {response.text}")
-            return False
-            
-    except Exception as e:
-        print(f"[ERROR] Exception syncing domains to webhook: {e}")
-        return False
+
 
 # Helper function to verify reCAPTCHA v3
 def verify_recaptcha(recaptcha_response: str, min_score: float = 0.5) -> bool:
@@ -329,11 +272,81 @@ async def home(request: Request):
     return templates.TemplateResponse("landing.html", {"request": request})
 
 # ============================================================================
+# UPDATE DOMAINS API ENDPOINT
+# ============================================================================
+
+@app.post("/update-domains")
+async def update_domains(
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """
+    External API endpoint that triggers nginx configuration updates.
+    Requires X-API-Key header for authentication.
+    Calls the nginx updater service with current domain list.
+    """
+    # Get API key from header
+    api_key = request.headers.get("X-API-Key")
+    
+    # Validate API key
+    if not api_key or api_key != UPDATE_DOMAINS_API_KEY:
+        raise HTTPException(status_code=401, detail="Unauthorized: Invalid or missing API key")
+    
+    try:
+        # Get all active and trial domains
+        domains = db.query(Domain).filter(
+            Domain.subscription_status.in_(['active', 'trial'])
+        ).all()
+        
+        # Build simple domain name list for nginx updater
+        domain_names = [domain.domain_name for domain in domains]
+        
+        # Prepare payload for nginx updater service
+        payload = {
+            "domains": domain_names
+        }
+        
+        # Call the nginx updater service
+        response = requests.post(
+            NGINX_UPDATER_URL,
+            json=payload,
+            timeout=30
+        )
+        
+        # Return the response from nginx updater service
+        if response.status_code == 200:
+            return JSONResponse(
+                status_code=200,
+                content=response.json()
+            )
+        else:
+            print(f"[ERROR] Nginx updater service returned status {response.status_code}: {response.text}")
+            raise HTTPException(
+                status_code=502,
+                detail=f"Nginx updater service error: {response.status_code}"
+            )
+        
+    except requests.exceptions.RequestException as e:
+        print(f"[ERROR] Failed to connect to nginx updater service: {e}")
+        raise HTTPException(
+            status_code=503,
+            detail="Failed to connect to nginx updater service"
+        )
+    except Exception as e:
+        print(f"[ERROR] Exception in /update-domains: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+
+# ============================================================================
 # REGISTRATION FLOW
 # ============================================================================
 
 @app.get("/register", response_class=HTMLResponse)
 async def register_page(request: Request):
+    # Redirect authenticated users to dashboard
+    if request.session.get("authenticated"):
+        return RedirectResponse(url="/dashboard")
     return templates.TemplateResponse("register.html", {"request": request})
 
 @app.post("/register")
@@ -517,6 +530,10 @@ async def verify_sms(
 
 @app.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request):
+    # Redirect authenticated users to dashboard
+    if request.session.get("authenticated"):
+        return RedirectResponse(url="/dashboard")
+    
     registered = request.query_params.get("registered")
     password_reset = request.query_params.get("password_reset")
     
@@ -857,8 +874,6 @@ async def add_domain(
         # Note: We don't fail the domain creation if DNS fails
         # The domain is still created in our database
     
-    # Sync domains to webhook
-    sync_domains_to_webhook(db)
     
     return RedirectResponse(url="/dashboard?success=domain_added", status_code=303)
 
@@ -889,8 +904,6 @@ async def delete_domain(
         db.delete(domain)
         db.commit()
         
-        # Sync domains to webhook
-        sync_domains_to_webhook(db)
     
     return RedirectResponse(url="/dashboard?success=domain_deleted", status_code=303)
 
@@ -964,8 +977,6 @@ async def edit_domain(
     domain.social_media_url = normalized_url
     db.commit()
     
-    # Sync domains to webhook
-    sync_domains_to_webhook(db)
     
     return RedirectResponse(url="/dashboard?success=domain_updated", status_code=303)
 

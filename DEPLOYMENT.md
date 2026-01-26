@@ -205,7 +205,7 @@ Already configured with development defaults. You can modify if needed.
 | `RECAPTCHA_SITE_KEY` | Google reCAPTCHA v3 site key | `6LeXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX` |
 | `RECAPTCHA_SECRET_KEY` | Google reCAPTCHA v3 secret key | `6LeXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX` |
 | `SESSION_SECRET_KEY` | Strong random secret for sessions | `your_random_secret_here` |
-| `DATABASE_PATH` | Path to SQLite database | `/app/data/tejara.db` |
+| `DATABASE_URL` | PostgreSQL connection string | `postgresql://user:pass@db:5432/tejara_db` |
 | `ENVIRONMENT` | Environment name | `production` |
 | `DEBUG` | Enable debug mode | `false` |
 
@@ -260,26 +260,21 @@ docker-compose -f docker-compose.prod.yml exec web bash
 # Create backup directory
 mkdir -p backups
 
-# Backup database (development)
-docker-compose exec web cp /app/data/tejara.db /app/backup.db
-docker cp tegara-dev:/app/backup.db ./backups/tegara-$(date +%Y%m%d-%H%M%S).db
+# Backup PostgreSQL database (development)
+docker-compose exec db pg_dump -U tejara_user tejara_db > ./backups/tejara-$(date +%Y%m%d-%H%M%S).sql
 
-# Backup database (production)
-docker-compose -f docker-compose.prod.yml exec web cp /app/data/tejara.db /app/backup.db
-docker cp tegara-prod:/app/backup.db ./backups/tegara-$(date +%Y%m%d-%H%M%S).db
+# Backup PostgreSQL database (production)
+docker-compose -f docker-compose.prod.yml exec db pg_dump -U tejara_user tejara_db > ./backups/tejara-$(date +%Y%m%d-%H%M%S).sql
 ```
 
 ### Database Restore
 
 ```bash
-# Stop the application
-docker-compose down  # or docker-compose -f docker-compose.prod.yml down
+# Restore database (development)
+docker-compose exec -T db psql -U tejara_user tejara_db < ./backups/tejara-YYYYMMDD-HHMMSS.sql
 
-# Restore database file
-cp ./backups/tegara-YYYYMMDD-HHMMSS.db ./data/tejara.db
-
-# Start the application
-docker-compose up -d  # or docker-compose -f docker-compose.prod.yml up -d
+# Restore database (production)
+docker-compose -f docker-compose.prod.yml exec -T db psql -U tejara_user tejara_db < ./backups/tejara-YYYYMMDD-HHMMSS.sql
 ```
 
 ### Clean Up
@@ -319,19 +314,20 @@ docker image prune -a
 
 ### Database Issues
 
-1. **Database locked error:**
-   - Ensure only one container is accessing the database
-   - Restart the container: `docker-compose restart`
+1. **Database connection error:**
+   - Ensure PostgreSQL container is running: `docker-compose ps`
+   - Check database logs: `docker-compose logs db`
+   - Restart the containers: `docker-compose restart`
 
 2. **Database not persisting:**
    - Check volume mounts: `docker-compose config`
-   - Verify `./data` directory exists and has proper permissions
+   - Verify `./postgres_data` directory exists and has proper permissions
 
 ### Permission Errors
 
 ```bash
-# Fix data directory permissions
-sudo chown -R 1000:1000 ./data
+# Fix postgres data directory permissions
+sudo chown -R 999:999 ./postgres_data
 ```
 
 ### reCAPTCHA Not Working
