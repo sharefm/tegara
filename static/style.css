@@ -983,21 +983,20 @@ input[type="text"].otp-input {
 }
 
 .qr-modal-container {
-    display: flex;
+    display: inline-flex;
     justify-content: center;
     align-items: center;
     overflow: hidden;
-    width: 100%;
 }
 
 .qr-modal-image {
-    width: 100% !important;
-    max-width: 250px !important;
-    height: auto !important;
-    max-height: 250px !important;
-    object-fit: contain !important;
+    width: auto;
+    max-width: 250px;
+    height: auto;
+    max-height: 250px;
+    object-fit: contain;
     border-radius: 12px;
-    margin: 0 auto;
+    display: block;
 }
 
 .btn-whatsapp {
