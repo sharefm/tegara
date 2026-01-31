@@ -949,40 +949,35 @@ input[type="text"].otp-input {
     }
 }
 
-/* WhatsApp Contact Section */
-.whatsapp-section {
-    margin-top: 50px;
-    padding-top: 40px;
-    border-top: 2px solid var(--border-color);
+/* WhatsApp Modal Styles */
+.whatsapp-modal-content {
     text-align: center;
+    max-width: 450px;
 }
 
-.whatsapp-title {
+.whatsapp-modal-title {
     font-size: 1.5rem;
     color: var(--text-dark);
     margin-bottom: 10px;
 }
 
-.whatsapp-description {
+.whatsapp-modal-description {
     color: var(--text-muted);
     font-size: 1rem;
     margin-bottom: 30px;
 }
 
-.qr-container {
+.qr-modal-container {
     display: flex;
     justify-content: center;
     margin-bottom: 30px;
 }
 
-.qr-code {
-    width: 200px;
-    height: 200px;
+.qr-modal-image {
+    max-width: 280px;
+    max-height: 280px;
     border-radius: 16px;
-    border: 3px solid var(--border-color);
-    background: white;
-    padding: 10px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 
 .btn-whatsapp {
@@ -994,11 +989,12 @@ input[type="text"].otp-input {
     color: white;
     padding: 16px 40px;
     border-radius: 12px;
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     font-weight: 700;
     text-decoration: none;
     transition: all 0.3s ease;
     box-shadow: 0 4px 16px rgba(37, 211, 102, 0.4);
+    width: 100%;
 }
 
 .btn-whatsapp:hover {
@@ -1008,27 +1004,25 @@ input[type="text"].otp-input {
 }
 
 .whatsapp-icon {
-    width: 28px;
-    height: 28px;
+    width: 24px;
+    height: 24px;
 }
 
 @media (max-width: 768px) {
-    .whatsapp-section {
-        margin-top: 30px;
-        padding-top: 30px;
+    .whatsapp-modal-content {
+        padding: 30px 20px;
     }
 
-    .whatsapp-title {
+    .whatsapp-modal-title {
         font-size: 1.2rem;
     }
 
-    .qr-code {
-        width: 160px;
-        height: 160px;
+    .qr-modal-image {
+        max-width: 220px;
+        max-height: 220px;
     }
 
     .btn-whatsapp {
-        width: 100%;
         font-size: 1rem;
         padding: 14px 30px;
     }
