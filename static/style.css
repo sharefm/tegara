@@ -970,14 +970,15 @@ input[type="text"].otp-input {
 .qr-modal-container {
     display: flex;
     justify-content: center;
-    margin-bottom: 30px;
+    align-items: center;
 }
 
 .qr-modal-image {
-    max-width: 280px;
-    max-height: 280px;
-    border-radius: 16px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    width: 250px;
+    height: auto;
+    max-height: 300px;
+    object-fit: contain;
+    border-radius: 12px;
 }
 
 .btn-whatsapp {
