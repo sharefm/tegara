@@ -955,18 +955,27 @@ input[type="text"].otp-input {
     max-width: 400px;
     padding: 30px;
     overflow: hidden;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
 .whatsapp-modal-title {
     font-size: 1.5rem;
     color: var(--text-dark);
     margin-bottom: 10px;
+    text-align: center;
+    width: 100%;
 }
 
 .whatsapp-modal-description {
     color: var(--text-muted);
     font-size: 1rem;
     margin-bottom: 20px;
+    text-align: center;
+    width: 100%;
 }
 
 .qr-modal-container {
@@ -974,6 +983,7 @@ input[type="text"].otp-input {
     justify-content: center;
     align-items: center;
     overflow: hidden;
+    width: 100%;
 }
 
 .qr-modal-image {
@@ -983,6 +993,7 @@ input[type="text"].otp-input {
     max-height: 250px !important;
     object-fit: contain !important;
     border-radius: 12px;
+    margin: 0 auto;
 }
 
 .btn-whatsapp {
