@@ -1012,7 +1012,7 @@ async def subscribe_page(
 @app.get("/logout")
 async def logout(request: Request):
     request.session.clear()
-    return RedirectResponse(url="/login")
+    return RedirectResponse(url="/")
 
 @app.get("/health")
 async def health_check():
