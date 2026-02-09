@@ -7,8 +7,8 @@ services:
     env_file:
       - .env.prod
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-tejara}
-      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_DB: tejara
+      POSTGRES_USER: deploy
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - ./postgres_data:/var/lib/postgresql/data
@@ -26,7 +26,7 @@ services:
           memory: 1G
     restart: always
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U $$POSTGRES_USER || exit 1" ]
+      test: [ "CMD-SHELL", "pg_isready -U deploy || exit 1" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -47,7 +47,7 @@ services:
       - .env.prod
     environment:
       - ENVIRONMENT=production
-      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-tejara}
+      - DATABASE_URL=postgresql://deploy:${POSTGRES_PASSWORD}@postgres:5432/tejara
     command: uvicorn main:app --host 0.0.0.0 --port 8000 --log-config /app/logging.conf --access-log --proxy-headers
     restart: always
     healthcheck:
