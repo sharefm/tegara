@@ -69,6 +69,12 @@
                 <input type="text" id="custom_domain_input" name="custom_domain_input" placeholder="domain.ps">
             </div>
 
+            <div class="form-group" id="custom_store_name_field" style="display: none;">
+                <label for="custom_store_name">اسم الشركة او المحل</label>
+                <input type="text" id="custom_store_name" name="custom_store_name"
+                    placeholder="عالم الطفل لملابس الاطفال">
+            </div>
+
             <div class="form-group" id="temp_domain_field">
                 <label for="store_name" id="store_name_label">اسم المتجر</label>
                 <div class="domain-input-group">
@@ -190,6 +196,12 @@
                 <input type="text" id="edit_custom_domain_input" name="custom_domain_input" placeholder="domain.ps">
             </div>
 
+            <div class="form-group" id="edit_custom_store_name_field" style="display: none;">
+                <label for="edit_custom_store_name">اسم الشركة او المحل</label>
+                <input type="text" id="edit_custom_store_name" name="custom_store_name"
+                    placeholder="عالم الطفل لملابس الاطفال">
+            </div>
+
             <div class="form-group" id="edit_temp_domain_field" style="display: none;">
                 <label for="edit_store_name" id="edit_store_name_label">اسم المتجر</label>
                 <div class="domain-input-group">
@@ -222,20 +234,26 @@
     const customDomainRadio = document.getElementById('custom_domain');
     const tempDomainRadio = document.getElementById('temp_domain');
     const customDomainField = document.getElementById('custom_domain_field');
+    const customStoreNameField = document.getElementById('custom_store_name_field');
     const tempDomainField = document.getElementById('temp_domain_field');
     const customDomainInput = document.getElementById('custom_domain_input');
+    const customStoreNameInput = document.getElementById('custom_store_name');
     const storeNameInput = document.getElementById('store_name');
 
     function toggleDomainFields() {
         if (customDomainRadio.checked) {
             customDomainField.style.display = 'block';
+            customStoreNameField.style.display = 'block';
             tempDomainField.style.display = 'none';
             customDomainInput.required = true;
+            customStoreNameInput.required = true;
             storeNameInput.required = false;
         } else {
             customDomainField.style.display = 'none';
+            customStoreNameField.style.display = 'none';
             tempDomainField.style.display = 'block';
             customDomainInput.required = false;
+            customStoreNameInput.required = false;
             storeNameInput.required = true;
         }
     }
@@ -342,20 +360,26 @@
     const editCustomDomainRadio = document.getElementById('edit_custom_domain');
     const editTempDomainRadio = document.getElementById('edit_temp_domain');
     const editCustomDomainField = document.getElementById('edit_custom_domain_field');
+    const editCustomStoreNameField = document.getElementById('edit_custom_store_name_field');
     const editTempDomainField = document.getElementById('edit_temp_domain_field');
     const editCustomDomainInput = document.getElementById('edit_custom_domain_input');
+    const editCustomStoreNameInput = document.getElementById('edit_custom_store_name');
     const editStoreNameInput = document.getElementById('edit_store_name');
 
     function toggleEditDomainFields() {
         if (editCustomDomainRadio.checked) {
             editCustomDomainField.style.display = 'block';
+            editCustomStoreNameField.style.display = 'block';
             editTempDomainField.style.display = 'none';
             editCustomDomainInput.required = true;
+            editCustomStoreNameInput.required = true;
             editStoreNameInput.required = false;
         } else {
             editCustomDomainField.style.display = 'none';
+            editCustomStoreNameField.style.display = 'none';
             editTempDomainField.style.display = 'block';
             editCustomDomainInput.required = false;
+            editCustomStoreNameInput.required = false;
             editStoreNameInput.required = true;
         }
     }

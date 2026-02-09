@@ -6,7 +6,6 @@ CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     mobile_number VARCHAR(20) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
-    business_name VARCHAR(255) NOT NULL,
     verified INTEGER DEFAULT 0,
     password_reset_count INTEGER DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -22,6 +21,7 @@ CREATE TABLE IF NOT EXISTS domains (
     domain_name VARCHAR(255) UNIQUE NOT NULL,
     domain_type VARCHAR(50) NOT NULL,
     social_media_url TEXT NOT NULL,
+    store_name VARCHAR(255),
     is_active INTEGER DEFAULT 1,
     subscription_status VARCHAR(50) DEFAULT 'trial',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

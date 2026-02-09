@@ -11,7 +11,6 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     mobile_number = Column(String, unique=True, nullable=False, index=True)
     password_hash = Column(String, nullable=False)
-    business_name = Column(String, nullable=False)  # Company/Store/Page name
     verified = Column(Integer, default=0)  # 0 = not verified, 1 = SMS verified
     password_reset_count = Column(Integer, default=0)  # Track password reset attempts
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -27,6 +26,7 @@ class Domain(Base):
     domain_name = Column(String, unique=True, nullable=False, index=True)
     domain_type = Column(String, nullable=False)  # 'custom' or 'temp'
     social_media_url = Column(String, nullable=False)  # URL to redirect to
+    store_name = Column(String, nullable=True)  # Store/business name (for custom domains)
     is_active = Column(Integer, default=1)  # 1 = active, 0 = inactive
     subscription_status = Column(String, default='trial')  # 'trial', 'active', 'expired'
     created_at = Column(DateTime, default=datetime.utcnow)
