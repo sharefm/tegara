@@ -92,6 +92,7 @@ services:
 
 networks:
   tejara-network:
+    name: tejara-network
     driver: bridge
 
 volumes:
