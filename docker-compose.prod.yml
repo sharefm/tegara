@@ -26,13 +26,13 @@ services:
           memory: 1G
     restart: always
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB:-tejara}" ]
+      test: [ "CMD-SHELL", "pg_isready -U $$POSTGRES_USER || exit 1" ]
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 10s
+      start_period: 30s
     networks:
-      - tegara-network
+      - tejara-network
 
   web:
     image: sharefdnskube/tejara:prod-latest
@@ -60,7 +60,7 @@ services:
       postgres:
         condition: service_healthy
     networks:
-      - tegara-network
+      - tejara-network
 
   nginx:
     image: nginx:alpine
@@ -75,7 +75,7 @@ services:
       - web
     restart: always
     networks:
-      - tegara-network
+      - tejara-network
 
   portainer:
     image: portainer/portainer-ce:latest
@@ -88,10 +88,10 @@ services:
       - portainer_data:/data
     restart: always
     networks:
-      - tegara-network
+      - tejara-network
 
 networks:
-  tegara-network:
+  tejara-network:
     driver: bridge
 
 volumes:
