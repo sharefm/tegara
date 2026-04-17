@@ -36,9 +36,9 @@ services:
 
   web:
     image: sharefdnskube/tejara:prod-latest
-    container_name: tegara-prod
+    container_name: web-prod
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
     volumes:
       # Persist database
       - ./data:/app/data
@@ -79,7 +79,7 @@ services:
 
   portainer:
     image: portainer/portainer-ce:latest
-    container_name: portainer-prod
+    container_name: portainer
     ports:
       - "9443:9443"
       - "9000:9000"
