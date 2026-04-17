@@ -47,7 +47,7 @@ services:
       - .env.prod
     environment:
       - ENVIRONMENT=production
-      - DATABASE_URL=postgresql://deploy:${POSTGRES_PASSWORD}@postgres:5432/tejara
+      - DATABASE_URL=postgresql://deploy:${POSTGRES_PASSWORD}@127.0.0.1:5432/tejara
     command: uvicorn main:app --host 0.0.0.0 --port 8000 --log-config /app/logging.conf --access-log --proxy-headers
     restart: always
     healthcheck:
