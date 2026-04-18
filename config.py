@@ -31,12 +31,15 @@ SESSION_SECRET_KEY = os.getenv(
     "dev-secret-key-change-in-production"  # Default for development
 )
 
-# PostgreSQL Database URL
-# Format: postgresql://user:password@host:port/database
-DATABASE_URL = os.getenv(
-    "DATABASE_URL",
-    "postgresql://tejara_user:tejara_password@127.0.0.1:5432/tejara_db"  # Default for development
-)
+# PostgreSQL Database URL - constructed from individual components
+# This avoids shell-substitution issues in docker-compose environment blocks
+_pg_user = os.getenv("POSTGRES_USER", "tejara_user")
+_pg_password = os.getenv("POSTGRES_PASSWORD", "tejara_password")
+_pg_host = os.getenv("POSTGRES_HOST", "127.0.0.1")
+_pg_port = os.getenv("POSTGRES_PORT", "5432")
+_pg_db = os.getenv("POSTGRES_DB", "tejara_db")
+
+DATABASE_URL = f"postgresql://{_pg_user}:{_pg_password}@{_pg_host}:{_pg_port}/{_pg_db}"
 
 
 # Environment
