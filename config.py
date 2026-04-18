@@ -35,7 +35,7 @@ SESSION_SECRET_KEY = os.getenv(
 # Format: postgresql://user:password@host:port/database
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "postgresql://tejara_user:tejara_password@db:5432/tejara_db"  # Default for development
+    "postgresql://tejara_user:tejara_password@127.0.0.1:5432/tejara_db"  # Default for development
 )
 
 
