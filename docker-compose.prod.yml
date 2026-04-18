@@ -13,8 +13,6 @@ services:
     volumes:
       - ./postgres_data:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-    ports:
-      - "127.0.0.1:5432:5432"
     shm_size: 1gb
     deploy:
       resources:
@@ -31,14 +29,11 @@ services:
       timeout: 5s
       retries: 5
       start_period: 30s
-    networks:
-      - tejara-network
+    network_mode: host
 
   web:
     image: sharefdnskube/tejara:prod-latest
     container_name: web-prod
-    ports:
-      - "127.0.0.1:8000:8000"
     volumes:
       # Persist database
       - ./data:/app/data
@@ -59,45 +54,27 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    networks:
-      - tejara-network
+    network_mode: host
 
   nginx:
     image: nginx:alpine
     container_name: nginx-prod
-    ports:
-      - "80:80"
-      - "443:443"
     volumes:
       - ./nginx.conf.prod:/etc/nginx/nginx.conf:ro
       - ./ssl:/etc/nginx/ssl:ro
     depends_on:
       - web
     restart: always
-    networks:
-      - tejara-network
+    network_mode: host
 
   portainer:
     image: portainer/portainer-ce:latest
     container_name: portainer
-    ports:
-      - "9443:9443"
-      - "9000:9000"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - portainer_data:/data
     restart: always
-    networks:
-      - tejara-network
-
-networks:
-  tejara-network:
-    name: tejara-network
-    driver: bridge
+    network_mode: host
 
 volumes:
-  postgres_data:
-  data:
   portainer_data:
-
-
