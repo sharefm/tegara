@@ -9,7 +9,7 @@ services:
     environment:
       POSTGRES_DB: tejara
       POSTGRES_USER: deploy
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      # POSTGRES_PASSWORD is loaded from env_file (.env.prod)
     volumes:
       - ./postgres_data:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
@@ -42,7 +42,7 @@ services:
       - .env.prod
     environment:
       - ENVIRONMENT=production
-      - DATABASE_URL=postgresql://deploy:${POSTGRES_PASSWORD}@127.0.0.1:5432/tejara
+      # DATABASE_URL is loaded from env_file (.env.prod) to avoid empty shell substitution
     command: uvicorn main:app --host 0.0.0.0 --port 8000 --log-config /app/logging.conf --access-log --proxy-headers
     restart: always
     healthcheck:
