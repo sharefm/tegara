@@ -117,7 +117,7 @@ Every successful build creates two tags:
 4. Deploy using:
    ```bash
    docker pull sharefdnskube/tejara:latest
-   docker run -d -p 8000:8000 sharefdnskube/tejara:latest
+   docker run -d -p 8080:8080 sharefdnskube/tejara:latest
    ```
 
 ### Production Deployment
@@ -128,7 +128,7 @@ Every successful build creates two tags:
 4. Deploy using:
    ```bash
    docker pull sharefdnskube/tejara:prod
-   docker run -d -p 8000:8000 sharefdnskube/tejara:prod
+   docker run -d -p 8080:8080 sharefdnskube/tejara:prod
    ```
 
 ## Using with docker-compose
@@ -225,7 +225,7 @@ If production deployment fails:
 docker pull sharefdnskube/tejara:prod-202601061530
 
 # Deploy the previous version
-docker run -d -p 8000:8000 sharefdnskube/tejara:prod-202601061530
+docker run -d -p 8080:8080 sharefdnskube/tejara:prod-202601061530
 ```
 
 ## Summary

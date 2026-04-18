@@ -60,7 +60,7 @@ The development environment includes live code reloading and debug features.
    ```
 
 5. **Access the application:**
-   - Application: http://localhost:8000
+   - Application: http://localhost:8080
    - Portainer: https://localhost:9443 or http://localhost:9000
 
 ### Development Features
@@ -306,7 +306,7 @@ docker image prune -a
 
 3. **Check if port is already in use:**
    ```bash
-   sudo lsof -i :8000  # for dev app
+   sudo lsof -i :8080  # for dev app
    sudo lsof -i :8080  # for prod app
    sudo lsof -i :9443  # for Portainer HTTPS
    sudo lsof -i :9000  # for Portainer HTTP
@@ -340,7 +340,7 @@ sudo chown -R 999:999 ./postgres_data
 
 ```bash
 # Test health endpoint manually
-curl http://localhost:8000/health
+curl http://localhost:8080/health
 
 # Check if application is running
 docker-compose ps

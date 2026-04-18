@@ -1,0 +1,102 @@
+{% extends "admin/base.html" %}
+{% block title %}User #{{ user.id }}{% endblock %}
+{% block page_title %}User #{{ user.id }}{% endblock %}
+{% block page_sub %}{{ user.mobile_number }}{% endblock %}
+
+{% block topbar_actions %}
+<a href="/admin/users" class="btn btn-ghost btn-sm">← Back to Users</a>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-title">Edit User</div>
+    <form method="post" action="/admin/users/{{ user.id }}">
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="id">ID</label>
+                <input type="text" id="id" value="{{ user.id }}" readonly>
+            </div>
+            <div class="form-group">
+                <label for="mobile_number">Mobile Number</label>
+                <input type="text" id="mobile_number" name="mobile_number" value="{{ user.mobile_number }}" required>
+            </div>
+            <div class="form-group">
+                <label for="verified">Verified</label>
+                <select id="verified" name="verified">
+                    <option value="1" {% if user.verified %}selected{% endif %}>Yes</option>
+                    <option value="0" {% if not user.verified %}selected{% endif %}>No</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="password_reset_count">Password Reset Count</label>
+                <input type="number" id="password_reset_count" name="password_reset_count"
+                    value="{{ user.password_reset_count }}" min="0">
+            </div>
+            <div class="form-group">
+                <label for="created_at">Created At</label>
+                <input type="text" id="created_at"
+                    value="{{ user.created_at.strftime('%Y-%m-%d %H:%M:%S') if user.created_at else '—' }}" readonly>
+            </div>
+            <div class="form-group">
+                <label for="new_password">Set New Password <span
+                        style="color:#6366f1;font-weight:400;text-transform:none;">(leave blank to keep
+                        current)</span></label>
+                <input type="password" id="new_password" name="new_password" placeholder="••••••••">
+            </div>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+    </form>
+</div>
+
+<!-- Domains belonging to this user -->
+<div class="card">
+    <div class="card-title">Domains ({{ user.domains | length }})</div>
+    {% if user.domains %}
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Domain</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Expiry</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for d in user.domains %}
+                <tr>
+                    <td class="mono" style="color:#94a3b8;">{{ d.id }}</td>
+                    <td>{{ d.domain_name }}</td>
+                    <td><span class="badge badge-muted">{{ d.domain_type }}</span></td>
+                    <td>
+                        {% if d.subscription_status == 'active' %}<span class="badge badge-success">active</span>
+                        {% elif d.subscription_status == 'trial' %}<span class="badge badge-warning">trial</span>
+                        {% else %}<span class="badge badge-danger">expired</span>{% endif %}
+                    </td>
+                    <td class="mono" style="font-size:0.75rem;color:#94a3b8;">{{ d.expiry_date.strftime('%Y-%m-%d') if
+                        d.expiry_date else '—' }}</td>
+                    <td><a href="/admin/domains/{{ d.id }}" class="btn btn-ghost btn-sm">Edit</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p style="color:#94a3b8;font-size:0.875rem;">No domains for this user.</p>
+    {% endif %}
+</div>
+
+<!-- Danger zone -->
+<div class="danger-zone">
+    <h3>⚠ Danger Zone</h3>
+    <p>Permanently delete this user and all their domains. This action cannot be undone.</p>
+    <form method="post" action="/admin/users/{{ user.id }}/delete"
+        onsubmit="return confirm('Delete user {{ user.mobile_number }} and all their domains?')">
+        <button type="submit" class="btn btn-danger">Delete User</button>
+    </form>
+</div>
+{% endblock %}

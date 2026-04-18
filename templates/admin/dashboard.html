@@ -1,0 +1,105 @@
+{% extends "admin/base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block page_sub %}Database overview{% endblock %}
+
+{% block content %}
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-label">Total Users</div>
+        <div class="stat-value stat-accent">{{ total_users }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Verified Users</div>
+        <div class="stat-value stat-success">{{ verified_users }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Total Domains</div>
+        <div class="stat-value stat-accent">{{ total_domains }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Active Domains</div>
+        <div class="stat-value stat-success">{{ active_domains }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Trial Domains</div>
+        <div class="stat-value stat-warning">{{ trial_domains }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Expired Domains</div>
+        <div class="stat-value stat-danger">{{ expired_domains }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">OTP Sessions</div>
+        <div class="stat-value">{{ total_otp }}</div>
+    </div>
+</div>
+
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem;">
+    <!-- Recent Users -->
+    <div class="card">
+        <div class="card-title">Recent Users</div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Mobile</th>
+                        <th>Verified</th>
+                        <th>Joined</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in recent_users %}
+                    <tr>
+                        <td><a href="/admin/users/{{ u.id }}" style="color:#818cf8;text-decoration:none;">{{
+                                u.mobile_number }}</a></td>
+                        <td>
+                            {% if u.verified %}
+                            <span class="badge badge-success">Yes</span>
+                            {% else %}
+                            <span class="badge badge-muted">No</span>
+                            {% endif %}
+                        </td>
+                        <td class="mono" style="font-size:0.75rem;color:#94a3b8;">{{ u.created_at.strftime('%Y-%m-%d')
+                            if u.created_at else '—' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div style="margin-top:0.75rem;"><a href="/admin/users" class="btn btn-ghost btn-sm">View all →</a></div>
+    </div>
+
+    <!-- Recent Domains -->
+    <div class="card">
+        <div class="card-title">Recent Domains</div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Domain</th>
+                        <th>Status</th>
+                        <th>Added</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for d in recent_domains %}
+                    <tr>
+                        <td><a href="/admin/domains/{{ d.id }}" style="color:#818cf8;text-decoration:none;">{{
+                                d.domain_name }}</a></td>
+                        <td>
+                            {% if d.subscription_status == 'active' %}<span class="badge badge-success">active</span>
+                            {% elif d.subscription_status == 'trial' %}<span class="badge badge-warning">trial</span>
+                            {% else %}<span class="badge badge-danger">expired</span>{% endif %}
+                        </td>
+                        <td class="mono" style="font-size:0.75rem;color:#94a3b8;">{{ d.created_at.strftime('%Y-%m-%d')
+                            if d.created_at else '—' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div style="margin-top:0.75rem;"><a href="/admin/domains" class="btn btn-ghost btn-sm">View all →</a></div>
+    </div>
+</div>
+{% endblock %}

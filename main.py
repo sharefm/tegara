@@ -1017,3 +1017,230 @@ async def logout(request: Request):
 async def health_check():
     """Health check endpoint for Docker and monitoring"""
     return {"status": "healthy", "service": "tegara"}
+
+
+# ============================================================================
+# ADMIN DASHBOARD
+# ============================================================================
+
+from config import ADMIN_PASSWORD
+import math
+
+def require_admin(request: Request):
+    """Raise 302 redirect if not admin-authenticated."""
+    if not request.session.get("admin_authenticated"):
+        raise HTTPException(status_code=302, headers={"Location": "/admin/login"})
+
+@app.get("/admin/login", response_class=HTMLResponse)
+async def admin_login_page(request: Request):
+    if request.session.get("admin_authenticated"):
+        return RedirectResponse(url="/admin")
+    return templates.TemplateResponse("admin/login.html", {"request": request})
+
+@app.post("/admin/login")
+async def admin_login(request: Request, password: str = Form(...)):
+    if not ADMIN_PASSWORD:
+        return templates.TemplateResponse("admin/login.html", {
+            "request": request,
+            "error": "Admin access is disabled. Set ADMIN_PASSWORD environment variable."
+        })
+    if password != ADMIN_PASSWORD:
+        return templates.TemplateResponse("admin/login.html", {
+            "request": request,
+            "error": "Incorrect password."
+        })
+    request.session["admin_authenticated"] = True
+    return RedirectResponse(url="/admin", status_code=303)
+
+@app.get("/admin/logout")
+async def admin_logout(request: Request):
+    request.session.pop("admin_authenticated", None)
+    return RedirectResponse(url="/admin/login")
+
+@app.get("/admin", response_class=HTMLResponse)
+async def admin_dashboard(request: Request, db: Session = Depends(get_db)):
+    require_admin(request)
+    total_users    = db.query(User).count()
+    verified_users = db.query(User).filter(User.verified == 1).count()
+    total_domains  = db.query(Domain).count()
+    active_domains  = db.query(Domain).filter(Domain.subscription_status == "active").count()
+    trial_domains   = db.query(Domain).filter(Domain.subscription_status == "trial").count()
+    expired_domains = db.query(Domain).filter(Domain.subscription_status == "expired").count()
+    total_otp      = db.query(OTPSession).count()
+    recent_users   = db.query(User).order_by(User.created_at.desc()).limit(5).all()
+    recent_domains = db.query(Domain).order_by(Domain.created_at.desc()).limit(5).all()
+    return templates.TemplateResponse("admin/dashboard.html", {
+        "request": request, "active_page": "dashboard",
+        "total_users": total_users, "verified_users": verified_users,
+        "total_domains": total_domains, "active_domains": active_domains,
+        "trial_domains": trial_domains, "expired_domains": expired_domains,
+        "total_otp": total_otp, "recent_users": recent_users, "recent_domains": recent_domains,
+    })
+
+# ---- USERS ----
+
+PAGE_SIZE = 25
+
+@app.get("/admin/users", response_class=HTMLResponse)
+async def admin_users(request: Request, db: Session = Depends(get_db),
+                      page: int = 1, q: str = "", verified: str = ""):
+    require_admin(request)
+    query = db.query(User)
+    if q:
+        query = query.filter(User.mobile_number.ilike(f"%{q}%"))
+    if verified in ("0", "1"):
+        query = query.filter(User.verified == int(verified))
+    total = query.count()
+    total_pages = max(1, math.ceil(total / PAGE_SIZE))
+    users = query.order_by(User.id.desc()).offset((page - 1) * PAGE_SIZE).limit(PAGE_SIZE).all()
+    return templates.TemplateResponse("admin/users.html", {
+        "request": request, "active_page": "users",
+        "users": users, "total": total, "page": page, "total_pages": total_pages,
+        "q": q, "verified_filter": verified,
+    })
+
+@app.get("/admin/users/{user_id}", response_class=HTMLResponse)
+async def admin_user_detail(user_id: int, request: Request, db: Session = Depends(get_db)):
+    require_admin(request)
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return templates.TemplateResponse("admin/user_detail.html", {
+        "request": request, "active_page": "users", "user": user,
+    })
+
+@app.post("/admin/users/{user_id}")
+async def admin_user_update(
+    user_id: int, request: Request, db: Session = Depends(get_db),
+    mobile_number: str = Form(...), verified: int = Form(...),
+    password_reset_count: int = Form(...), new_password: str = Form("")
+):
+    require_admin(request)
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    # Check uniqueness if mobile changed
+    if mobile_number != user.mobile_number:
+        existing = db.query(User).filter(User.mobile_number == mobile_number).first()
+        if existing:
+            return templates.TemplateResponse("admin/user_detail.html", {
+                "request": request, "active_page": "users", "user": user,
+                "flash_error": "Mobile number already in use by another user.",
+            })
+    user.mobile_number = mobile_number
+    user.verified = verified
+    user.password_reset_count = password_reset_count
+    if new_password.strip():
+        user.password_hash = hash_password(new_password.strip())
+    db.commit()
+    db.refresh(user)
+    return templates.TemplateResponse("admin/user_detail.html", {
+        "request": request, "active_page": "users", "user": user,
+        "flash_success": "User updated successfully.",
+    })
+
+@app.post("/admin/users/{user_id}/delete")
+async def admin_user_delete(user_id: int, request: Request, db: Session = Depends(get_db)):
+    require_admin(request)
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    db.delete(user)
+    db.commit()
+    return RedirectResponse(url="/admin/users?flash_success=User+deleted", status_code=303)
+
+# ---- DOMAINS ----
+
+@app.get("/admin/domains", response_class=HTMLResponse)
+async def admin_domains(request: Request, db: Session = Depends(get_db),
+                        page: int = 1, q: str = "", status: str = "", dtype: str = ""):
+    require_admin(request)
+    query = db.query(Domain)
+    if q:
+        query = query.filter(Domain.domain_name.ilike(f"%{q}%"))
+    if status:
+        query = query.filter(Domain.subscription_status == status)
+    if dtype:
+        query = query.filter(Domain.domain_type == dtype)
+    total = query.count()
+    total_pages = max(1, math.ceil(total / PAGE_SIZE))
+    domains = query.order_by(Domain.id.desc()).offset((page - 1) * PAGE_SIZE).limit(PAGE_SIZE).all()
+    return templates.TemplateResponse("admin/domains.html", {
+        "request": request, "active_page": "domains",
+        "domains": domains, "total": total, "page": page, "total_pages": total_pages,
+        "q": q, "status_filter": status, "dtype_filter": dtype,
+    })
+
+@app.get("/admin/domains/{domain_id}", response_class=HTMLResponse)
+async def admin_domain_detail(domain_id: int, request: Request, db: Session = Depends(get_db)):
+    require_admin(request)
+    domain = db.query(Domain).filter(Domain.id == domain_id).first()
+    if not domain:
+        raise HTTPException(status_code=404, detail="Domain not found")
+    return templates.TemplateResponse("admin/domain_detail.html", {
+        "request": request, "active_page": "domains", "domain": domain,
+    })
+
+@app.post("/admin/domains/{domain_id}")
+async def admin_domain_update(
+    domain_id: int, request: Request, db: Session = Depends(get_db),
+    domain_name: str = Form(...), domain_type: str = Form(...),
+    subscription_status: str = Form(...), is_active: int = Form(...),
+    social_media_url: str = Form(...), store_name: str = Form(""),
+    expiry_date: str = Form("")
+):
+    require_admin(request)
+    domain = db.query(Domain).filter(Domain.id == domain_id).first()
+    if not domain:
+        raise HTTPException(status_code=404, detail="Domain not found")
+    domain.domain_name = domain_name
+    domain.domain_type = domain_type
+    domain.subscription_status = subscription_status
+    domain.is_active = is_active
+    domain.social_media_url = social_media_url
+    domain.store_name = store_name or None
+    domain.expiry_date = datetime.strptime(expiry_date, "%Y-%m-%d") if expiry_date else None
+    db.commit()
+    db.refresh(domain)
+    return templates.TemplateResponse("admin/domain_detail.html", {
+        "request": request, "active_page": "domains", "domain": domain,
+        "flash_success": "Domain updated successfully.",
+    })
+
+@app.post("/admin/domains/{domain_id}/delete")
+async def admin_domain_delete(domain_id: int, request: Request, db: Session = Depends(get_db)):
+    require_admin(request)
+    domain = db.query(Domain).filter(Domain.id == domain_id).first()
+    if not domain:
+        raise HTTPException(status_code=404, detail="Domain not found")
+    db.delete(domain)
+    db.commit()
+    return RedirectResponse(url="/admin/domains?flash_success=Domain+deleted", status_code=303)
+
+# ---- OTP SESSIONS ----
+
+@app.get("/admin/otp-sessions", response_class=HTMLResponse)
+async def admin_otp_sessions(request: Request, db: Session = Depends(get_db),
+                             page: int = 1, q: str = ""):
+    require_admin(request)
+    query = db.query(OTPSession)
+    if q:
+        query = query.filter(OTPSession.mobile_number.ilike(f"%{q}%"))
+    total = query.count()
+    total_pages = max(1, math.ceil(total / PAGE_SIZE))
+    sessions = query.order_by(OTPSession.id.desc()).offset((page - 1) * PAGE_SIZE).limit(PAGE_SIZE).all()
+    return templates.TemplateResponse("admin/otp_sessions.html", {
+        "request": request, "active_page": "otp",
+        "sessions": sessions, "total": total, "page": page, "total_pages": total_pages,
+        "q": q,
+    })
+
+@app.post("/admin/otp-sessions/{session_id}/delete")
+async def admin_otp_delete(session_id: int, request: Request, db: Session = Depends(get_db)):
+    require_admin(request)
+    session = db.query(OTPSession).filter(OTPSession.id == session_id).first()
+    if not session:
+        raise HTTPException(status_code=404, detail="OTP session not found")
+    db.delete(session)
+    db.commit()
+    return RedirectResponse(url="/admin/otp-sessions", status_code=303)

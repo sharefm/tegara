@@ -87,4 +87,6 @@ NGINX_UPDATER_URL = os.getenv(
     "http://localhost:8001/update-domains"  # Default for development
 )
 
-
+# Admin Dashboard
+# Set ADMIN_PASSWORD env var to enable the admin interface. Empty = disabled.
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "")

@@ -1,0 +1,89 @@
+{% extends "admin/base.html" %}
+{% block title %}Domain #{{ domain.id }}{% endblock %}
+{% block page_title %}Domain #{{ domain.id }}{% endblock %}
+{% block page_sub %}{{ domain.domain_name }}{% endblock %}
+
+{% block topbar_actions %}
+<a href="/admin/domains" class="btn btn-ghost btn-sm">← Back to Domains</a>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-title">Edit Domain</div>
+    <form method="post" action="/admin/domains/{{ domain.id }}">
+        <div class="form-grid">
+            <div class="form-group">
+                <label>ID</label>
+                <input type="text" value="{{ domain.id }}" readonly>
+            </div>
+            <div class="form-group">
+                <label for="domain_name">Domain Name</label>
+                <input type="text" id="domain_name" name="domain_name" value="{{ domain.domain_name }}" required>
+            </div>
+            <div class="form-group">
+                <label for="domain_type">Domain Type</label>
+                <select id="domain_type" name="domain_type">
+                    <option value="custom" {% if domain.domain_type=='custom' %}selected{% endif %}>custom</option>
+                    <option value="temp" {% if domain.domain_type=='temp' %}selected{% endif %}>temp</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="subscription_status">Subscription Status</label>
+                <select id="subscription_status" name="subscription_status">
+                    <option value="trial" {% if domain.subscription_status=='trial' %}selected{% endif %}>trial</option>
+                    <option value="active" {% if domain.subscription_status=='active' %}selected{% endif %}>active
+                    </option>
+                    <option value="expired" {% if domain.subscription_status=='expired' %}selected{% endif %}>expired
+                    </option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="is_active">Is Active</label>
+                <select id="is_active" name="is_active">
+                    <option value="1" {% if domain.is_active %}selected{% endif %}>Yes</option>
+                    <option value="0" {% if not domain.is_active %}selected{% endif %}>No</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="expiry_date">Expiry Date</label>
+                <input type="date" id="expiry_date" name="expiry_date"
+                    value="{{ domain.expiry_date.strftime('%Y-%m-%d') if domain.expiry_date else '' }}">
+            </div>
+            <div class="form-group" style="grid-column:1/-1;">
+                <label for="social_media_url">Social Media URL</label>
+                <input type="url" id="social_media_url" name="social_media_url" value="{{ domain.social_media_url }}">
+            </div>
+            <div class="form-group">
+                <label for="store_name">Store Name</label>
+                <input type="text" id="store_name" name="store_name" value="{{ domain.store_name or '' }}">
+            </div>
+            <div class="form-group">
+                <label>Owner</label>
+                {% if domain.user %}
+                <input type="text" value="{{ domain.user.mobile_number }} (ID {{ domain.user.id }})" readonly>
+                {% else %}
+                <input type="text" value="—" readonly>
+                {% endif %}
+            </div>
+            <div class="form-group">
+                <label>Created At</label>
+                <input type="text"
+                    value="{{ domain.created_at.strftime('%Y-%m-%d %H:%M:%S') if domain.created_at else '—' }}"
+                    readonly>
+            </div>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+    </form>
+</div>
+
+<div class="danger-zone">
+    <h3>⚠ Danger Zone</h3>
+    <p>Permanently delete this domain. This action cannot be undone.</p>
+    <form method="post" action="/admin/domains/{{ domain.id }}/delete"
+        onsubmit="return confirm('Delete domain {{ domain.domain_name }}?')">
+        <button type="submit" class="btn btn-danger">Delete Domain</button>
+    </form>
+</div>
+{% endblock %}

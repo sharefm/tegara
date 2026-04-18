@@ -15,37 +15,18 @@ A modern web application for registering and managing web stores with Arabic int
 ### Branch Strategy
 
 This repository uses separate branches for different environments:
-- **DEV** - Development environment (port 8000)
-- **PROD** - Production environment (port 8000)
+#- **DEV** - Development environment (port 8080)
+- **PROD** - Production environment (port 8080)
 
-See [BRANCH_STRATEGY.md](BRANCH_STRATEGY.md) for detailed workflow.
-
-### Docker Deployment (Recommended)
-
-**Development:**
-```bash
-git checkout DEV
-docker-compose -f docker-compose.dev.yml up -d
-# Access at http://localhost:8000
-# Portainer at https://localhost:9443
-```
 
 **Production:**
-```bash
 git checkout PROD
 cp .env.prod.example .env.prod
 # Edit .env.prod with production secrets
 docker-compose -f docker-compose.prod.yml up -d
-# Access at http://localhost:8000
+# Access at http://localhost:8080
 ```
 
-See [DEPLOYMENT.md](DEPLOYMENT.md) for comprehensive deployment guide.
-
-### Manual Setup (Alternative)
-
-### 1. Install Dependencies
-
-```bash
 # Activate virtual environment
 source venv/bin/activate
 
@@ -57,12 +38,12 @@ pip install -r requirements.txt
 
 ```bash
 # Start the server
-./venv/bin/uvicorn main:app --reload --host 0.0.0.0 --port 8000
+./venv/bin/uvicorn main:app --reload --host 0.0.0.0 --port 8080
 ```
 
 ### 3. Access the App
 
-Open your browser and navigate to: **http://localhost:8000**
+Open your browser and navigate to: **http://localhost:8080**
 
 ## Application Flow
 

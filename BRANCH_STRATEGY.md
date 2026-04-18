@@ -10,7 +10,7 @@ This repository uses a branch-based deployment strategy to separate development 
 - **Deployment**: Development server
 - **Docker Compose**: `docker-compose.dev.yml` (dev-only)
 - **Environment**: `.env.dev` (dev-only)
-- **Port**: 8000
+- **Port**: 8080
 - **Files**: Contains only development-related configuration
 
 ### PROD Branch
@@ -19,7 +19,7 @@ This repository uses a branch-based deployment strategy to separate development 
 - **Deployment**: Production server
 - **Docker Compose**: `docker-compose.prod.yml` (prod-only)
 - **Environment**: `.env.prod.example` (prod-only)
-- **Port**: 8000
+- **Port**: 8080
 - **Files**: Contains only production-related configuration
 
 ### master Branch
@@ -39,7 +39,7 @@ This repository uses a branch-based deployment strategy to separate development 
 2. **Make changes and test locally**:
    ```bash
    docker-compose -f docker-compose.dev.yml up -d
-   # Test at http://localhost:8000
+   # Test at http://localhost:8080
    ```
 
 3. **Commit and push to DEV**:
@@ -63,7 +63,7 @@ This repository uses a branch-based deployment strategy to separate development 
 3. **Test production configuration locally** (optional):
    ```bash
    docker-compose -f docker-compose.prod.yml up -d
-   # Test at http://localhost:8000
+   # Test at http://localhost:8080
    ```
 
 4. **Push to PROD**:
@@ -102,8 +102,8 @@ This repository uses a branch-based deployment strategy to separate development 
 
 | Branch | Port | Docker Compose File | Environment File | Files Included |
 |--------|------|-------------------|------------------|----------------|
-| DEV | 8000 | `docker-compose.dev.yml` | `.env.dev` | Dev files only |
-| PROD | 8000 | `docker-compose.prod.yml` | `.env.prod.example` | Prod files only |
+| DEV | 8080 | `docker-compose.dev.yml` | `.env.dev` | Dev files only |
+| PROD | 8080 | `docker-compose.prod.yml` | `.env.prod.example` | Prod files only |
 
 ## Portainer Access
 

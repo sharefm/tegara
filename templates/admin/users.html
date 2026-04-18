@@ -1,0 +1,76 @@
+{% extends "admin/base.html" %}
+{% block title %}Users{% endblock %}
+{% block page_title %}Users{% endblock %}
+{% block page_sub %}{{ total }} total users{% endblock %}
+
+{% block topbar_actions %}
+<div style="font-size:0.8rem;color:#94a3b8;">Page {{ page }} of {{ total_pages }}</div>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="filter-bar">
+        <form method="get" style="display:flex;gap:0.75rem;flex-wrap:wrap;align-items:center;">
+            <input name="q" value="{{ q }}" placeholder="Search mobile…" style="width:200px;">
+            <select name="verified">
+                <option value="">All</option>
+                <option value="1" {% if verified_filter=='1' %}selected{% endif %}>Verified</option>
+                <option value="0" {% if verified_filter=='0' %}selected{% endif %}>Unverified</option>
+            </select>
+            <button type="submit" class="btn btn-primary btn-sm">Filter</button>
+            <a href="/admin/users" class="btn btn-ghost btn-sm">Reset</a>
+        </form>
+    </div>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Mobile</th>
+                    <th>Verified</th>
+                    <th>Domains</th>
+                    <th>Reset Count</th>
+                    <th>Created</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in users %}
+                <tr>
+                    <td class="mono" style="color:#94a3b8;">{{ u.id }}</td>
+                    <td>{{ u.mobile_number }}</td>
+                    <td>
+                        {% if u.verified %}
+                        <span class="badge badge-success">Verified</span>
+                        {% else %}
+                        <span class="badge badge-muted">No</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ u.domains | length }}</td>
+                    <td>{{ u.password_reset_count }}</td>
+                    <td class="mono" style="font-size:0.75rem;color:#94a3b8;">{{ u.created_at.strftime('%Y-%m-%d %H:%M')
+                        if u.created_at else '—' }}</td>
+                    <td><a href="/admin/users/{{ u.id }}" class="btn btn-ghost btn-sm">Edit</a></td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" style="text-align:center;color:#94a3b8;padding:2rem;">No users found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="pagination">
+        {% if page > 1 %}<a href="?page={{ page-1 }}&q={{ q }}&verified={{ verified_filter }}" class="page-btn">←
+            Prev</a>{% endif %}
+        {% for p in range(1, total_pages+1) %}
+        <a href="?page={{ p }}&q={{ q }}&verified={{ verified_filter }}"
+            class="page-btn {% if p == page %}active{% endif %}">{{ p }}</a>
+        {% endfor %}
+        {% if page < total_pages %}<a href="?page={{ page+1 }}&q={{ q }}&verified={{ verified_filter }}"
+            class="page-btn">Next →</a>{% endif %}
+    </div>
+</div>
+{% endblock %}

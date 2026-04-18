@@ -216,7 +216,7 @@ With nginx reverse proxy:
 |------|----------|---------|
 | 80 | HTTP | Redirects to HTTPS |
 | 443 | HTTPS | Main application access |
-| 8000 | HTTP | Direct app access (internal only) |
+| 8080 | HTTP | Direct app access (internal only) |
 | 9000 | HTTP | Portainer |
 | 9443 | HTTPS | Portainer (secure) |
 
@@ -227,7 +227,7 @@ With nginx reverse proxy:
 - HTTPS: https://yourdomain.com
 
 **Direct access (without nginx):**
-- HTTP: http://yourdomain.com:8000
+- HTTP: http://yourdomain.com:8080
 
 ## Summary
 
