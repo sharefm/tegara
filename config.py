@@ -90,3 +90,6 @@ NGINX_UPDATER_URL = os.getenv(
 # Admin Dashboard
 # Set ADMIN_PASSWORD env var to enable the admin interface. Empty = disabled.
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "")
+
+# Cron job secret — used to authenticate calls to /cron
+CRON_SECRET = os.getenv("CRON_SECRET", "")

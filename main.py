@@ -1244,3 +1244,59 @@ async def admin_otp_delete(session_id: int, request: Request, db: Session = Depe
     db.delete(session)
     db.commit()
     return RedirectResponse(url="/edara/otp-sessions", status_code=303)
+
+
+# ============================================================================
+# CRON JOB ENDPOINT
+# ============================================================================
+
+from config import CRON_SECRET
+
+@app.get("/cron")
+async def cron_job(request: Request, db: Session = Depends(get_db)):
+    """
+    Periodic maintenance endpoint. Call via cron with the X-Cron-Secret header.
+    Tasks:
+      1. Mark domains as 'expired' when their expiry_date has passed
+      2. Delete OTP sessions older than 24 hours
+    """
+    # Authenticate via header
+    secret = request.headers.get("X-Cron-Secret", "")
+    if not CRON_SECRET or secret != CRON_SECRET:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    now = datetime.utcnow()
+    cutoff_otp = now - timedelta(hours=24)
+
+    # 1. Expire domains past their expiry_date
+    expired = (
+        db.query(Domain)
+        .filter(
+            Domain.expiry_date != None,
+            Domain.expiry_date < now,
+            Domain.subscription_status != "expired"
+        )
+        .all()
+    )
+    expired_count = len(expired)
+    for domain in expired:
+        domain.subscription_status = "expired"
+        domain.is_active = 0
+
+    # 2. Delete OTP sessions older than 24 hours
+    deleted_otp = (
+        db.query(OTPSession)
+        .filter(OTPSession.created_at < cutoff_otp)
+        .delete(synchronize_session=False)
+    )
+
+    db.commit()
+
+    print(f"[CRON] Expired {expired_count} domain(s). Deleted {deleted_otp} OTP session(s).")
+
+    return {
+        "status": "ok",
+        "ran_at": now.isoformat(),
+        "domains_expired": expired_count,
+        "otp_sessions_deleted": deleted_otp,
+    }
