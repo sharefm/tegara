@@ -1029,15 +1029,15 @@ import math
 def require_admin(request: Request):
     """Raise 302 redirect if not admin-authenticated."""
     if not request.session.get("admin_authenticated"):
-        raise HTTPException(status_code=302, headers={"Location": "/admin/login"})
+        raise HTTPException(status_code=302, headers={"Location": "/edara/login"})
 
-@app.get("/admin/login", response_class=HTMLResponse)
+@app.get("/edara/login", response_class=HTMLResponse)
 async def admin_login_page(request: Request):
     if request.session.get("admin_authenticated"):
-        return RedirectResponse(url="/admin")
+        return RedirectResponse(url="/edara")
     return templates.TemplateResponse("admin/login.html", {"request": request})
 
-@app.post("/admin/login")
+@app.post("/edara/login")
 async def admin_login(request: Request, password: str = Form(...)):
     if not ADMIN_PASSWORD:
         return templates.TemplateResponse("admin/login.html", {
@@ -1050,14 +1050,14 @@ async def admin_login(request: Request, password: str = Form(...)):
             "error": "Incorrect password."
         })
     request.session["admin_authenticated"] = True
-    return RedirectResponse(url="/admin", status_code=303)
+    return RedirectResponse(url="/edara", status_code=303)
 
-@app.get("/admin/logout")
+@app.get("/edara/logout")
 async def admin_logout(request: Request):
     request.session.pop("admin_authenticated", None)
-    return RedirectResponse(url="/admin/login")
+    return RedirectResponse(url="/edara/login")
 
-@app.get("/admin", response_class=HTMLResponse)
+@app.get("/edara", response_class=HTMLResponse)
 async def admin_dashboard(request: Request, db: Session = Depends(get_db)):
     require_admin(request)
     total_users    = db.query(User).count()
@@ -1081,7 +1081,7 @@ async def admin_dashboard(request: Request, db: Session = Depends(get_db)):
 
 PAGE_SIZE = 25
 
-@app.get("/admin/users", response_class=HTMLResponse)
+@app.get("/edara/users", response_class=HTMLResponse)
 async def admin_users(request: Request, db: Session = Depends(get_db),
                       page: int = 1, q: str = "", verified: str = ""):
     require_admin(request)
@@ -1099,7 +1099,7 @@ async def admin_users(request: Request, db: Session = Depends(get_db),
         "q": q, "verified_filter": verified,
     })
 
-@app.get("/admin/users/{user_id}", response_class=HTMLResponse)
+@app.get("/edara/users/{user_id}", response_class=HTMLResponse)
 async def admin_user_detail(user_id: int, request: Request, db: Session = Depends(get_db)):
     require_admin(request)
     user = db.query(User).filter(User.id == user_id).first()
@@ -1109,7 +1109,7 @@ async def admin_user_detail(user_id: int, request: Request, db: Session = Depend
         "request": request, "active_page": "users", "user": user,
     })
 
-@app.post("/admin/users/{user_id}")
+@app.post("/edara/users/{user_id}")
 async def admin_user_update(
     user_id: int, request: Request, db: Session = Depends(get_db),
     mobile_number: str = Form(...), verified: int = Form(...),
@@ -1139,7 +1139,7 @@ async def admin_user_update(
         "flash_success": "User updated successfully.",
     })
 
-@app.post("/admin/users/{user_id}/delete")
+@app.post("/edara/users/{user_id}/delete")
 async def admin_user_delete(user_id: int, request: Request, db: Session = Depends(get_db)):
     require_admin(request)
     user = db.query(User).filter(User.id == user_id).first()
@@ -1147,11 +1147,11 @@ async def admin_user_delete(user_id: int, request: Request, db: Session = Depend
         raise HTTPException(status_code=404, detail="User not found")
     db.delete(user)
     db.commit()
-    return RedirectResponse(url="/admin/users?flash_success=User+deleted", status_code=303)
+    return RedirectResponse(url="/edara/users?flash_success=User+deleted", status_code=303)
 
 # ---- DOMAINS ----
 
-@app.get("/admin/domains", response_class=HTMLResponse)
+@app.get("/edara/domains", response_class=HTMLResponse)
 async def admin_domains(request: Request, db: Session = Depends(get_db),
                         page: int = 1, q: str = "", status: str = "", dtype: str = ""):
     require_admin(request)
@@ -1171,7 +1171,7 @@ async def admin_domains(request: Request, db: Session = Depends(get_db),
         "q": q, "status_filter": status, "dtype_filter": dtype,
     })
 
-@app.get("/admin/domains/{domain_id}", response_class=HTMLResponse)
+@app.get("/edara/domains/{domain_id}", response_class=HTMLResponse)
 async def admin_domain_detail(domain_id: int, request: Request, db: Session = Depends(get_db)):
     require_admin(request)
     domain = db.query(Domain).filter(Domain.id == domain_id).first()
@@ -1181,7 +1181,7 @@ async def admin_domain_detail(domain_id: int, request: Request, db: Session = De
         "request": request, "active_page": "domains", "domain": domain,
     })
 
-@app.post("/admin/domains/{domain_id}")
+@app.post("/edara/domains/{domain_id}")
 async def admin_domain_update(
     domain_id: int, request: Request, db: Session = Depends(get_db),
     domain_name: str = Form(...), domain_type: str = Form(...),
@@ -1207,7 +1207,7 @@ async def admin_domain_update(
         "flash_success": "Domain updated successfully.",
     })
 
-@app.post("/admin/domains/{domain_id}/delete")
+@app.post("/edara/domains/{domain_id}/delete")
 async def admin_domain_delete(domain_id: int, request: Request, db: Session = Depends(get_db)):
     require_admin(request)
     domain = db.query(Domain).filter(Domain.id == domain_id).first()
@@ -1215,11 +1215,11 @@ async def admin_domain_delete(domain_id: int, request: Request, db: Session = De
         raise HTTPException(status_code=404, detail="Domain not found")
     db.delete(domain)
     db.commit()
-    return RedirectResponse(url="/admin/domains?flash_success=Domain+deleted", status_code=303)
+    return RedirectResponse(url="/edara/domains?flash_success=Domain+deleted", status_code=303)
 
 # ---- OTP SESSIONS ----
 
-@app.get("/admin/otp-sessions", response_class=HTMLResponse)
+@app.get("/edara/otp-sessions", response_class=HTMLResponse)
 async def admin_otp_sessions(request: Request, db: Session = Depends(get_db),
                              page: int = 1, q: str = ""):
     require_admin(request)
@@ -1235,7 +1235,7 @@ async def admin_otp_sessions(request: Request, db: Session = Depends(get_db),
         "q": q,
     })
 
-@app.post("/admin/otp-sessions/{session_id}/delete")
+@app.post("/edara/otp-sessions/{session_id}/delete")
 async def admin_otp_delete(session_id: int, request: Request, db: Session = Depends(get_db)):
     require_admin(request)
     session = db.query(OTPSession).filter(OTPSession.id == session_id).first()
@@ -1243,4 +1243,4 @@ async def admin_otp_delete(session_id: int, request: Request, db: Session = Depe
         raise HTTPException(status_code=404, detail="OTP session not found")
     db.delete(session)
     db.commit()
-    return RedirectResponse(url="/admin/otp-sessions", status_code=303)
+    return RedirectResponse(url="/edara/otp-sessions", status_code=303)

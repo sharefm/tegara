@@ -18,7 +18,7 @@
                 <option value="0" {% if verified_filter=='0' %}selected{% endif %}>Unverified</option>
             </select>
             <button type="submit" class="btn btn-primary btn-sm">Filter</button>
-            <a href="/admin/users" class="btn btn-ghost btn-sm">Reset</a>
+            <a href="/edara/users" class="btn btn-ghost btn-sm">Reset</a>
         </form>
     </div>
 
@@ -51,7 +51,7 @@
                     <td>{{ u.password_reset_count }}</td>
                     <td class="mono" style="font-size:0.75rem;color:#94a3b8;">{{ u.created_at.strftime('%Y-%m-%d %H:%M')
                         if u.created_at else '—' }}</td>
-                    <td><a href="/admin/users/{{ u.id }}" class="btn btn-ghost btn-sm">Edit</a></td>
+                    <td><a href="/edara/users/{{ u.id }}" class="btn btn-ghost btn-sm">Edit</a></td>
                 </tr>
                 {% else %}
                 <tr>

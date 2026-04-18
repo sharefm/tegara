@@ -24,7 +24,7 @@
                 <option value="temp" {% if dtype_filter=='temp' %}selected{% endif %}>Temp</option>
             </select>
             <button type="submit" class="btn btn-primary btn-sm">Filter</button>
-            <a href="/admin/domains" class="btn btn-ghost btn-sm">Reset</a>
+            <a href="/edara/domains" class="btn btn-ghost btn-sm">Reset</a>
         </form>
     </div>
 
@@ -60,7 +60,7 @@
                     </td>
                     <td>
                         {% if d.user %}
-                        <a href="/admin/users/{{ d.user.id }}"
+                        <a href="/edara/users/{{ d.user.id }}"
                             style="color:#818cf8;text-decoration:none;font-size:0.8rem;">{{ d.user.mobile_number }}</a>
                         {% else %}—{% endif %}
                     </td>
@@ -68,7 +68,7 @@
                         d.expiry_date else '—' }}</td>
                     <td class="mono" style="font-size:0.75rem;color:#94a3b8;">{{ d.created_at.strftime('%Y-%m-%d') if
                         d.created_at else '—' }}</td>
-                    <td><a href="/admin/domains/{{ d.id }}" class="btn btn-ghost btn-sm">Edit</a></td>
+                    <td><a href="/edara/domains/{{ d.id }}" class="btn btn-ghost btn-sm">Edit</a></td>
                 </tr>
                 {% else %}
                 <tr>

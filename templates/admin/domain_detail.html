@@ -4,13 +4,13 @@
 {% block page_sub %}{{ domain.domain_name }}{% endblock %}
 
 {% block topbar_actions %}
-<a href="/admin/domains" class="btn btn-ghost btn-sm">← Back to Domains</a>
+<a href="/edara/domains" class="btn btn-ghost btn-sm">← Back to Domains</a>
 {% endblock %}
 
 {% block content %}
 <div class="card">
     <div class="card-title">Edit Domain</div>
-    <form method="post" action="/admin/domains/{{ domain.id }}">
+    <form method="post" action="/edara/domains/{{ domain.id }}">
         <div class="form-grid">
             <div class="form-group">
                 <label>ID</label>
@@ -81,7 +81,7 @@
 <div class="danger-zone">
     <h3>⚠ Danger Zone</h3>
     <p>Permanently delete this domain. This action cannot be undone.</p>
-    <form method="post" action="/admin/domains/{{ domain.id }}/delete"
+    <form method="post" action="/edara/domains/{{ domain.id }}/delete"
         onsubmit="return confirm('Delete domain {{ domain.domain_name }}?')">
         <button type="submit" class="btn btn-danger">Delete Domain</button>
     </form>

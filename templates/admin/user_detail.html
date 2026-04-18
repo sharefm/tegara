@@ -4,13 +4,13 @@
 {% block page_sub %}{{ user.mobile_number }}{% endblock %}
 
 {% block topbar_actions %}
-<a href="/admin/users" class="btn btn-ghost btn-sm">← Back to Users</a>
+<a href="/edara/users" class="btn btn-ghost btn-sm">← Back to Users</a>
 {% endblock %}
 
 {% block content %}
 <div class="card">
     <div class="card-title">Edit User</div>
-    <form method="post" action="/admin/users/{{ user.id }}">
+    <form method="post" action="/edara/users/{{ user.id }}">
         <div class="form-grid">
             <div class="form-group">
                 <label for="id">ID</label>
@@ -79,7 +79,7 @@
                     </td>
                     <td class="mono" style="font-size:0.75rem;color:#94a3b8;">{{ d.expiry_date.strftime('%Y-%m-%d') if
                         d.expiry_date else '—' }}</td>
-                    <td><a href="/admin/domains/{{ d.id }}" class="btn btn-ghost btn-sm">Edit</a></td>
+                    <td><a href="/edara/domains/{{ d.id }}" class="btn btn-ghost btn-sm">Edit</a></td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -94,7 +94,7 @@
 <div class="danger-zone">
     <h3>⚠ Danger Zone</h3>
     <p>Permanently delete this user and all their domains. This action cannot be undone.</p>
-    <form method="post" action="/admin/users/{{ user.id }}/delete"
+    <form method="post" action="/edara/users/{{ user.id }}/delete"
         onsubmit="return confirm('Delete user {{ user.mobile_number }} and all their domains?')">
         <button type="submit" class="btn btn-danger">Delete User</button>
     </form>

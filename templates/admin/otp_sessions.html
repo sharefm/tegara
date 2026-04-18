@@ -9,7 +9,7 @@
         <form method="get" style="display:flex;gap:0.75rem;align-items:center;">
             <input name="q" value="{{ q }}" placeholder="Search mobile…" style="width:200px;">
             <button type="submit" class="btn btn-primary btn-sm">Filter</button>
-            <a href="/admin/otp-sessions" class="btn btn-ghost btn-sm">Reset</a>
+            <a href="/edara/otp-sessions" class="btn btn-ghost btn-sm">Reset</a>
         </form>
     </div>
 
@@ -38,7 +38,7 @@
                     <td class="mono" style="font-size:0.75rem;color:#94a3b8;">{{ s.created_at.strftime('%Y-%m-%d
                         %H:%M:%S') if s.created_at else '—' }}</td>
                     <td>
-                        <form method="post" action="/admin/otp-sessions/{{ s.id }}/delete"
+                        <form method="post" action="/edara/otp-sessions/{{ s.id }}/delete"
                             onsubmit="return confirm('Delete OTP session #{{ s.id }}?')">
                             <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                         </form>

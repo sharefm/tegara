@@ -64,6 +64,22 @@ http {
         proxy_buffering off;
         proxy_request_buffering off;
         
+        # Admin dashboard — restricted to trusted IPs only
+        location /edara {
+            allow 217.66.228.66;
+            allow 129.159.151.52;
+            allow 80.238.236.5;
+            allow 80.238.224.123;
+            deny all;
+
+            proxy_pass http://127.0.0.1:8080;
+            proxy_http_version 1.1;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
         # Reverse proxy to tejara application
         location / {
             proxy_pass http://127.0.0.1:8080;
