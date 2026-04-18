@@ -43,10 +43,10 @@ services:
     environment:
       - ENVIRONMENT=production
       # DATABASE_URL is loaded from env_file (.env.prod) to avoid empty shell substitution
-    command: uvicorn main:app --host 0.0.0.0 --port 8000 --log-config /app/logging.conf --access-log --proxy-headers
+    command: uvicorn main:app --host 0.0.0.0 --port 8080 --log-config /app/logging.conf --access-log --proxy-headers
     restart: always
     healthcheck:
-      test: [ "CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)" ]
+      test: [ "CMD", "python", "-c", "import requests; requests.get('http://localhost:8080/health', timeout=5)" ]
       interval: 30s
       timeout: 10s
       retries: 3
