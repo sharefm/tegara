@@ -3,7 +3,7 @@ name: Build caddy image
 on:
   push:
     branches:
-      - prod
+      - PROD
 
 env:
    IMAGE_NAME:  registry.gitlab.com/sharefm/tejara-website
