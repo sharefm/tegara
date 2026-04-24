@@ -3,10 +3,10 @@ name: CI/CD - DEV Environment
 on:
   push:
     branches:
-      - DEV
+      - DEV1
   pull_request:
     branches:
-      - DEV
+      - DEV1
 
 env:
   DOCKER_USERNAME: tejaradev

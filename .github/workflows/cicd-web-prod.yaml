@@ -1,0 +1,37 @@
+name: Build caddy image
+
+on:
+  push:
+    branches:
+      - prod
+
+env:
+   IMAGE_NAME:  registry.gitlab.com/sharefm/tejara-website
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v4          
+      
+      - name: Generate timestamp
+        run: |
+            TIMESTAMP=$(date +%Y-%m-%d-%H-%M)
+            echo "TIMESTAMP=${TIMESTAMP}" >> $GITHUB_ENV
+
+      - name: Build the Docker image
+        run: docker buildx build --tag ${{env.IMAGE_NAME}}:latest --tag ${{env.IMAGE_NAME}}:${{env.TIMESTAMP}} .        
+
+      - name: GitLab Login
+        run: |
+              docker login -u tejara-website -p ${{ secrets.GITLAB_PAT}} registry.gitlab.com
+
+      - name: Push the Docker image
+        run: |
+            docker push ${{env.IMAGE_NAME}}:latest
+            docker push ${{env.IMAGE_NAME}}:${{env.TIMESTAMP}}
+
+
+  
