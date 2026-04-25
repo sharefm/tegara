@@ -18,6 +18,7 @@ from config import (
     CLOUDFLARE_API_TOKEN, CLOUDFLARE_ZONE_ID, CLOUDFLARE_TARGET_IP,
     UPDATE_DOMAINS_API_KEY, NGINX_UPDATER_URL
 )
+from caddy_manager import setup_domain_files, remove_domain_files, reload_caddy
 
 app = FastAPI()
 
@@ -871,6 +872,24 @@ async def add_domain(
         # Note: We don't fail the domain creation if DNS fails
         # The domain is still created in our database
     
+    # Setup Caddy hosting files
+    user = db.query(User).filter(User.id == user_id).first()
+    phone = user.mobile_number if user else ""
+    final_store_name = custom_store_name if domain_type == "custom" else store_name
+    
+    setup_success = setup_domain_files(
+        domain=domain_name,
+        store_name=final_store_name,
+        phone=phone,
+        address="",  # Address not collected in form
+        email="",    # Email not collected in form
+        social_media=[normalized_url]
+    )
+    
+    if setup_success:
+        reload_caddy()
+    else:
+        print(f"[ERROR] Failed to setup caddy files for {domain_name}")
     
     return RedirectResponse(url="/dashboard?success=domain_added", status_code=303)
 
@@ -900,6 +919,13 @@ async def delete_domain(
         # Delete domain from database
         db.delete(domain)
         db.commit()
+        
+        # Remove Caddy files and reload
+        remove_success = remove_domain_files(domain.domain_name)
+        if remove_success:
+            reload_caddy()
+        else:
+            print(f"[ERROR] Failed to remove caddy files for {domain.domain_name}")
         
     
     return RedirectResponse(url="/dashboard?success=domain_deleted", status_code=303)
@@ -976,6 +1002,27 @@ async def edit_domain(
     domain.store_name = custom_store_name if domain_type == "custom" else None
     db.commit()
     
+    # Handle Caddy files
+    user = db.query(User).filter(User.id == user_id).first()
+    phone = user.mobile_number if user else ""
+    final_store_name = custom_store_name if domain_type == "custom" else store_name
+    
+    if new_domain_name != old_domain_name:
+        remove_domain_files(old_domain_name)
+    
+    setup_success = setup_domain_files(
+        domain=new_domain_name,
+        store_name=final_store_name,
+        phone=phone,
+        address="",
+        email="",
+        social_media=[normalized_url]
+    )
+    
+    if setup_success:
+        reload_caddy()
+    else:
+        print(f"[ERROR] Failed to update caddy files for {new_domain_name}")
     
     return RedirectResponse(url="/dashboard?success=domain_updated", status_code=303)
 
