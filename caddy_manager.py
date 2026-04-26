@@ -53,7 +53,9 @@ def setup_domain_files(
 
     hosting_dir = f"/app/hosting/{domain}"
     vhosts_dir = "/app/vhosts"
-    caddyfile_path = f"{vhosts_dir}/{domain}.caddyfile"
+    
+    is_subdomain = domain.endswith(".tejara.ps")
+    caddyfile_path = f"{vhosts_dir}/{domain}_{'subdomain' if is_subdomain else 'custom'}.caddyfile"
 
     os.makedirs(vhosts_dir, exist_ok=True)
     os.makedirs(hosting_dir, exist_ok=True)
@@ -84,7 +86,16 @@ def setup_domain_files(
         # Not a fatal error if policies.html doesn't exist, but log it
 
     # Generate Caddyfile block
-    vhost_config = f"""{domain} {{
+    if is_subdomain:
+        safe_domain = domain.replace('.', '_')
+        vhost_config = f"""@{safe_domain} host {domain}
+handle @{safe_domain} {{
+    root * /usr/share/caddy/hosting/{domain}
+    file_server
+}}
+"""
+    else:
+        vhost_config = f"""{domain} {{
     root * /usr/share/caddy/hosting/{domain}
     file_server
 }}
@@ -105,7 +116,9 @@ def remove_domain_files(domain: str) -> bool:
 
     hosting_dir = f"/app/hosting/{domain}"
     vhosts_dir = "/app/vhosts"
-    caddyfile_path = f"{vhosts_dir}/{domain}.caddyfile"
+    
+    is_subdomain = domain.endswith(".tejara.ps")
+    caddyfile_path = f"{vhosts_dir}/{domain}_{'subdomain' if is_subdomain else 'custom'}.caddyfile"
 
     try:
         if os.path.exists(hosting_dir):
