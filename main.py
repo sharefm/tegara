@@ -842,6 +842,9 @@ async def add_domain(
         domain_name = custom_domain_input
         if not domain_name or not domain_name.strip():
             return RedirectResponse(url="/dashboard?error=empty_domain", status_code=303)
+        domain_name = domain_name.strip().lower()
+        if domain_name.startswith('www.'):
+            domain_name = domain_name[4:]
     else:  # temporary
         if not store_name or not validate_domain_name(store_name):
             return RedirectResponse(url="/dashboard?error=invalid_store_name", status_code=303)
@@ -971,6 +974,9 @@ async def edit_domain(
         new_domain_name = custom_domain_input
         if not new_domain_name or not new_domain_name.strip():
             return RedirectResponse(url="/dashboard?error=empty_domain", status_code=303)
+        new_domain_name = new_domain_name.strip().lower()
+        if new_domain_name.startswith('www.'):
+            new_domain_name = new_domain_name[4:]
     else:  # temporary
         if not store_name or not validate_domain_name(store_name):
             return RedirectResponse(url="/dashboard?error=invalid_store_name", status_code=303)

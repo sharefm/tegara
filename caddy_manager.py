@@ -95,7 +95,7 @@ handle @{safe_domain} {{
 }}
 """
     else:
-        vhost_config = f"""{domain} {{
+        vhost_config = f"""{domain}, www.{domain} {{
     root * /usr/share/caddy/hosting/{domain}
     file_server
 }}
