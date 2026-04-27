@@ -71,14 +71,14 @@
                     title="يجب أن يكون دومين صحيح باللغة الإنجليزية (مثال: domain.ps)">
             </div>
 
-            <div class="form-group" id="custom_store_name_field" style="display: none;">
-                <label for="custom_store_name">اسم الشركة او المحل</label>
+            <div class="form-group" id="custom_store_name_field">
+                <label for="custom_store_name">اسم المتجر</label>
                 <input type="text" id="custom_store_name" name="custom_store_name"
-                    placeholder="عالم الطفل لملابس الاطفال">
+                    placeholder="شركة الاخوة">
             </div>
 
             <div class="form-group" id="temp_domain_field">
-                <label for="store_name" id="store_name_label">اسم المتجر</label>
+                <label for="store_name" id="store_name_label">دومين المتجر</label>
                 <div class="domain-input-group">
                     <span class="domain-suffix">.tejara.ps</span>
                     <span class="domain-dot">.</span>
@@ -86,6 +86,16 @@
                         pattern="[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]|[a-zA-Z0-9]" maxlength="63"
                         title="يجب أن يحتوي على أحرف إنجليزية وأرقام وشرطات فقط (لا يمكن استخدام أحرف عربية)">
                 </div>
+            </div>
+
+            <div class="form-group">
+                <label for="address">العنوان</label>
+                <input type="text" id="address" name="address" placeholder="القدس , شارع صلاح الدين">
+            </div>
+
+            <div class="form-group">
+                <label for="email">البريد الالكتروني</label>
+                <input type="email" id="email" name="email" placeholder="my-store@gmail.com">
             </div>
 
             <div class="form-group">
@@ -154,7 +164,7 @@
                 </div>
                 <div class="domain-actions">
                     <button type="button" class="btn btn-edit"
-                        onclick="openEditModal({{ domain.id }}, '{{ domain.domain_type }}', '{{ domain.domain_name }}', '{{ domain.social_media_url }}')">تعديل</button>
+                        onclick="openEditModal({{ domain.id }}, '{{ domain.domain_type }}', '{{ domain.domain_name }}', '{{ domain.social_media_url }}', '{{ domain.store_name or '' }}', '{{ domain.address or '' }}', '{{ domain.email or '' }}')">تعديل</button>
                     <form method="POST" action="/dashboard/delete-domain/{{ domain.id }}" style="display: inline;">
                         <button type="submit" class="btn btn-delete"
                             onclick="return confirm('هل أنت متأكد من حذف هذا الدومين?')">حذف</button>
@@ -200,14 +210,14 @@
                     title="يجب أن يكون دومين صحيح باللغة الإنجليزية (مثال: domain.ps)">
             </div>
 
-            <div class="form-group" id="edit_custom_store_name_field" style="display: none;">
-                <label for="edit_custom_store_name">اسم الشركة او المحل</label>
+            <div class="form-group" id="edit_custom_store_name_field">
+                <label for="edit_custom_store_name">اسم المتجر</label>
                 <input type="text" id="edit_custom_store_name" name="custom_store_name"
-                    placeholder="عالم الطفل لملابس الاطفال">
+                    placeholder="شركة الاخوة">
             </div>
 
             <div class="form-group" id="edit_temp_domain_field" style="display: none;">
-                <label for="edit_store_name" id="edit_store_name_label">اسم المتجر</label>
+                <label for="edit_store_name" id="edit_store_name_label">دومين المتجر</label>
                 <div class="domain-input-group">
                     <span class="domain-suffix">.tejara.ps</span>
                     <span class="domain-dot">.</span>
@@ -215,6 +225,16 @@
                         pattern="[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]|[a-zA-Z0-9]" maxlength="63"
                         title="يجب أن يحتوي على أحرف إنجليزية وأرقام وشرطات فقط (لا يمكن استخدام أحرف عربية)">
                 </div>
+            </div>
+
+            <div class="form-group">
+                <label for="edit_address">العنوان</label>
+                <input type="text" id="edit_address" name="address" placeholder="القدس , شارع صلاح الدين">
+            </div>
+
+            <div class="form-group">
+                <label for="edit_email">البريد الالكتروني</label>
+                <input type="email" id="edit_email" name="email" placeholder="my-store@gmail.com">
             </div>
 
             <div class="form-group">
@@ -247,17 +267,13 @@
     function toggleDomainFields() {
         if (customDomainRadio.checked) {
             customDomainField.style.display = 'block';
-            customStoreNameField.style.display = 'block';
             tempDomainField.style.display = 'none';
             customDomainInput.required = true;
-            customStoreNameInput.required = true;
             storeNameInput.required = false;
         } else {
             customDomainField.style.display = 'none';
-            customStoreNameField.style.display = 'none';
             tempDomainField.style.display = 'block';
             customDomainInput.required = false;
-            customStoreNameInput.required = false;
             storeNameInput.required = true;
         }
     }
@@ -269,9 +285,9 @@
     const storeNameLabel = document.getElementById('store_name_label');
     storeNameInput.addEventListener('input', function () {
         if (this.value.trim()) {
-            storeNameLabel.textContent = 'اسم المتجر: ' + this.value + '.tejara.ps';
+            storeNameLabel.textContent = 'دومين المتجر: ' + this.value + '.tejara.ps';
         } else {
-            storeNameLabel.textContent = 'اسم المتجر';
+            storeNameLabel.textContent = 'دومين المتجر';
         }
     });
 
@@ -332,7 +348,7 @@
     // Edit Modal Functions
     let currentEditDomainId = null;
 
-    function openEditModal(domainId, domainType, domainName, socialMediaUrl) {
+    function openEditModal(domainId, domainType, domainName, socialMediaUrl, storeNameDisplay, address, email) {
         currentEditDomainId = domainId;
         const modal = document.getElementById('editModal');
         const form = document.getElementById('editDomainForm');
@@ -344,15 +360,22 @@
         if (domainType === 'custom') {
             document.getElementById('edit_custom_domain').checked = true;
             document.getElementById('edit_custom_domain_input').value = domainName;
+            document.getElementById('edit_store_name').value = '';
         } else {
             document.getElementById('edit_temp_domain').checked = true;
             // Extract store name from domain (remove .tejara.ps)
             const storeName = domainName.replace('.tejara.ps', '');
             document.getElementById('edit_store_name').value = storeName;
+            document.getElementById('edit_custom_domain_input').value = '';
         }
 
         // Set social media URL
         document.getElementById('edit_social_media_url').value = socialMediaUrl;
+        
+        // Set new fields
+        document.getElementById('edit_custom_store_name').value = storeNameDisplay;
+        document.getElementById('edit_address').value = address;
+        document.getElementById('edit_email').value = email;
 
         // Toggle fields based on domain type
         toggleEditDomainFields();
@@ -380,17 +403,13 @@
     function toggleEditDomainFields() {
         if (editCustomDomainRadio.checked) {
             editCustomDomainField.style.display = 'block';
-            editCustomStoreNameField.style.display = 'block';
             editTempDomainField.style.display = 'none';
             editCustomDomainInput.required = true;
-            editCustomStoreNameInput.required = true;
             editStoreNameInput.required = false;
         } else {
             editCustomDomainField.style.display = 'none';
-            editCustomStoreNameField.style.display = 'none';
             editTempDomainField.style.display = 'block';
             editCustomDomainInput.required = false;
-            editCustomStoreNameInput.required = false;
             editStoreNameInput.required = true;
         }
     }
@@ -402,9 +421,9 @@
     const editStoreNameLabel = document.getElementById('edit_store_name_label');
     editStoreNameInput.addEventListener('input', function () {
         if (this.value.trim()) {
-            editStoreNameLabel.textContent = 'اسم المتجر: ' + this.value + '.tejara.ps';
+            editStoreNameLabel.textContent = 'دومين المتجر: ' + this.value + '.tejara.ps';
         } else {
-            editStoreNameLabel.textContent = 'اسم المتجر';
+            editStoreNameLabel.textContent = 'دومين المتجر';
         }
     });
 

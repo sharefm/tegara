@@ -822,6 +822,8 @@ async def add_domain(
     custom_domain_input: str = Form(None),
     store_name: str = Form(None),
     custom_store_name: str = Form(None),
+    address: str = Form(None),
+    email: str = Form(None),
     social_media_url: str = Form(...),
     db: Session = Depends(get_db)
 ):
@@ -857,7 +859,9 @@ async def add_domain(
         domain_name=domain_name,
         domain_type=domain_type,
         social_media_url=normalized_url,
-        store_name=custom_store_name if domain_type == "custom" else None,
+        store_name=custom_store_name,
+        email=email,
+        address=address,
         subscription_status='trial',
         expiry_date=expiry_date
     )
@@ -875,14 +879,14 @@ async def add_domain(
     # Setup Caddy hosting files
     user = db.query(User).filter(User.id == user_id).first()
     phone = user.mobile_number if user else ""
-    final_store_name = custom_store_name if domain_type == "custom" else store_name
+    final_store_name = custom_store_name
     
     setup_success = setup_domain_files(
         domain=domain_name,
         store_name=final_store_name,
         phone=phone,
-        address="",  # Address not collected in form
-        email="",    # Email not collected in form
+        address=address or "",
+        email=email or "",
         social_media=[normalized_url]
     )
     
@@ -938,6 +942,8 @@ async def edit_domain(
     custom_domain_input: str = Form(None),
     store_name: str = Form(None),
     custom_store_name: str = Form(None),
+    address: str = Form(None),
+    email: str = Form(None),
     social_media_url: str = Form(...),
     db: Session = Depends(get_db)
 ):
@@ -999,13 +1005,15 @@ async def edit_domain(
     domain.domain_name = new_domain_name
     domain.domain_type = domain_type
     domain.social_media_url = normalized_url
-    domain.store_name = custom_store_name if domain_type == "custom" else None
+    domain.store_name = custom_store_name
+    domain.email = email
+    domain.address = address
     db.commit()
     
     # Handle Caddy files
     user = db.query(User).filter(User.id == user_id).first()
     phone = user.mobile_number if user else ""
-    final_store_name = custom_store_name if domain_type == "custom" else store_name
+    final_store_name = custom_store_name
     
     if new_domain_name != old_domain_name:
         remove_domain_files(old_domain_name)
@@ -1014,8 +1022,8 @@ async def edit_domain(
         domain=new_domain_name,
         store_name=final_store_name,
         phone=phone,
-        address="",
-        email="",
+        address=address or "",
+        email=email or "",
         social_media=[normalized_url]
     )
     

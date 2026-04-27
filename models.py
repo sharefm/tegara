@@ -26,7 +26,9 @@ class Domain(Base):
     domain_name = Column(String, unique=True, nullable=False, index=True)
     domain_type = Column(String, nullable=False)  # 'custom' or 'temp'
     social_media_url = Column(String, nullable=False)  # URL to redirect to
-    store_name = Column(String, nullable=True)  # Store/business name (for custom domains)
+    store_name = Column(String, nullable=True)  # Store/business name
+    email = Column(String, nullable=True)       # Store email
+    address = Column(String, nullable=True)     # Store address
     is_active = Column(Integer, default=1)  # 1 = active, 0 = inactive
     subscription_status = Column(String, default='trial')  # 'trial', 'active', 'expired'
     created_at = Column(DateTime, default=datetime.utcnow)
