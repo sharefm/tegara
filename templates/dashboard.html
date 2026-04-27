@@ -47,7 +47,7 @@
         </div>
         {% endif %}
 
-        <h2 style="margin-bottom: 20px; color: var(--text-dark);">إضافة دومين جديد</h2>
+        <h2 style="margin-bottom: 20px; color: var(--text-dark);">إضافة متجر جديد</h2>
 
         <form method="POST" action="/dashboard/add-domain" id="addDomainForm">
             <div class="form-group">
@@ -59,7 +59,7 @@
                     </div>
                     <div class="radio-option">
                         <input type="radio" id="temp_domain" name="domain_type" value="temporary" checked>
-                        <label for="temp_domain">استعمل دومين تجريبي</label>
+                        <label for="temp_domain">استعمل دومين فرعي</label>
                     </div>
                 </div>
             </div>
@@ -94,12 +94,12 @@
                     placeholder="https://facebook.com/mystore" required>
             </div>
 
-            <button type="submit" class="btn btn-primary">إضافة دومين</button>
+            <button type="submit" class="btn btn-primary">إضافة متجر جديد</button>
         </form>
 
         <hr style="margin: 40px 0; border: none; border-top: 1px solid var(--border-color);">
 
-        <h2 style="margin-bottom: 20px; color: var(--text-dark);">الدومينات الخاصة بك</h2>
+        <h2 style="margin-bottom: 20px; color: var(--text-dark);">المتاجر الخاصة بك</h2>
 
         {% if domains %}
         <div class="domains-list">
@@ -114,7 +114,7 @@
                                 {% if domain.domain_type == 'custom' %}
                                 <span class="badge badge-custom">دومين خاص</span>
                                 {% else %}
-                                <span class="badge badge-temp">دومين تجريبي</span>
+                                <span class="badge badge-temp">دومين فرعي</span>
                                 {% endif %}
                             </div>
                             <div class="domain-status">
@@ -165,7 +165,7 @@
         </div>
         {% else %}
         <div class="alert alert-info">
-            لا توجد دومينات بعد. قم بإضافة دومين جديد أعلاه.
+            لا توجد دومينات بعد. قم بإضافة متجر جديد أعلاه.
         </div>
         {% endif %}
     </div>
@@ -188,7 +188,7 @@
                     </div>
                     <div class="radio-option">
                         <input type="radio" id="edit_temp_domain" name="domain_type" value="temporary">
-                        <label for="edit_temp_domain">استعمل دومين تجريبي</label>
+                        <label for="edit_temp_domain">استعمل دومين فرعي</label>
                     </div>
                 </div>
             </div>
