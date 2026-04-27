@@ -66,7 +66,9 @@
 
             <div class="form-group" id="custom_domain_field" style="display: none;">
                 <label for="custom_domain_input">الدومين الخاص</label>
-                <input type="text" id="custom_domain_input" name="custom_domain_input" placeholder="domain.ps">
+                <input type="text" id="custom_domain_input" name="custom_domain_input" placeholder="domain.ps"
+                    pattern="^([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$"
+                    title="يجب أن يكون دومين صحيح باللغة الإنجليزية (مثال: domain.ps)">
             </div>
 
             <div class="form-group" id="custom_store_name_field" style="display: none;">
@@ -193,7 +195,9 @@
 
             <div class="form-group" id="edit_custom_domain_field" style="display: none;">
                 <label for="edit_custom_domain_input">الدومين الخاص</label>
-                <input type="text" id="edit_custom_domain_input" name="custom_domain_input" placeholder="domain.ps">
+                <input type="text" id="edit_custom_domain_input" name="custom_domain_input" placeholder="domain.ps"
+                    pattern="^([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$"
+                    title="يجب أن يكون دومين صحيح باللغة الإنجليزية (مثال: domain.ps)">
             </div>
 
             <div class="form-group" id="edit_custom_store_name_field" style="display: none;">
@@ -310,9 +314,16 @@
             }
         } else if (domainType === 'custom') {
             const customDomain = document.getElementById('custom_domain_input').value;
+            const customPattern = /^([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/;
+            
             if (!customDomain || customDomain.trim() === '') {
                 e.preventDefault();
                 alert('يرجى إدخال الدومين الخاص بك');
+                return;
+            }
+            if (!customPattern.test(customDomain)) {
+                e.preventDefault();
+                alert('يجب أن يكون الدومين صحيحاً باللغة الإنجليزية (مثال: domain.ps)');
                 return;
             }
         }
@@ -436,9 +447,16 @@
             }
         } else if (domainType === 'custom') {
             const customDomain = document.getElementById('edit_custom_domain_input').value;
+            const customPattern = /^([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/;
+
             if (!customDomain || customDomain.trim() === '') {
                 e.preventDefault();
                 alert('يرجى إدخال الدومين الخاص بك');
+                return;
+            }
+            if (!customPattern.test(customDomain)) {
+                e.preventDefault();
+                alert('يجب أن يكون الدومين صحيحاً باللغة الإنجليزية (مثال: domain.ps)');
                 return;
             }
         }
