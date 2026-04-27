@@ -5,27 +5,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title> [STORE_NAME] - الصفحة الرئيسية</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
     <style>
-        /* ============================================
-           CUSTOMIZATION SECTION - Edit these variables
-           ============================================ */
         :root {
-            /* Store branding colors */
-            --primary-color: #007bff;
-            --secondary-color: #0056b3;
-            --accent-color: #17a2b8;
-            --text-dark: #333;
-            --text-light: #666;
-            --bg-light: #f8f9fa;
-            --border-color: #dee2e6;
-
-            /* Fonts */
-            --main-font: 'Arial', 'Segoe UI', sans-serif;
+            /* Light & Clean Elegant Theme */
+            --primary-color: #3b82f6;
+            --primary-hover: #2563eb;
+            --bg-color: #f8fafc;
+            --surface-color: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --font-family: 'Tajawal', sans-serif;
         }
 
-        /* ============================================
-           BASE STYLES - No need to edit below
-           ============================================ */
         * {
             margin: 0;
             padding: 0;
@@ -33,276 +32,351 @@
         }
 
         body {
-            font-family: var(--main-font);
+            font-family: var(--font-family);
+            color: var(--text-main);
+            background-color: var(--bg-color);
             line-height: 1.6;
-            color: var(--text-dark);
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
         }
 
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 0 20px;
         }
 
-        /* Header Section */
+        /* Header */
         header {
-            background: white;
-            padding: 30px 0;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            margin-bottom: 40px;
+            background-color: var(--surface-color);
+            box-shadow: var(--shadow-sm);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            padding: 20px 0;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .store-name {
-            text-align: center;
+            font-size: 1.8rem;
+            font-weight: 800;
             color: var(--primary-color);
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            font-weight: bold;
+            text-decoration: none;
+            letter-spacing: -0.5px;
         }
 
-        .store-tagline {
-            text-align: center;
-            color: var(--text-light);
-            font-size: 1.1rem;
-            margin-bottom: 20px;
+        .nav-links {
+            display: flex;
+            gap: 25px;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-main);
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary-color);
         }
 
         /* Hero Section */
         .hero {
-            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
-            color: white;
-            padding: 60px 40px;
-            border-radius: 15px;
+            background: linear-gradient(120deg, #f1f5f9 0%, #ffffff 100%);
+            padding: 80px 20px;
             text-align: center;
-            margin-bottom: 40px;
-            box-shadow: 0 5px 20px rgba(0, 123, 255, 0.3);
+            border-bottom: 1px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
         }
 
-        .hero h2 {
-            font-size: 2rem;
-            margin-bottom: 15px;
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.05) 0%, rgba(255, 255, 255, 0) 70%);
+            z-index: 0;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-bottom: 20px;
+            line-height: 1.2;
         }
 
         .hero p {
-            font-size: 1.2rem;
-            opacity: 0.95;
+            font-size: 1.25rem;
+            color: var(--text-muted);
+            margin-bottom: 40px;
         }
 
-        /* Main Content Grid */
-        .content-grid {
+        .btn-primary {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            text-decoration: none;
+            box-shadow: var(--shadow-md);
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Features Section */
+        .features {
+            padding: 80px 0;
+            background-color: var(--surface-color);
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 50px;
+            color: var(--text-main);
+        }
+
+        .features-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 30px;
-            margin-bottom: 40px;
         }
 
-        .card {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
+        .feature-card {
+            background: var(--bg-color);
+            padding: 40px 30px;
+            border-radius: 16px;
+            text-align: center;
+            border: 1px solid var(--border-color);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
-        .card:hover {
+        .feature-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.15);
+            box-shadow: var(--shadow-lg);
         }
 
-        .card h3 {
-            color: var(--secondary-color);
-            margin-bottom: 15px;
-            font-size: 1.5rem;
-            border-bottom: 2px solid var(--primary-color);
-            padding-bottom: 10px;
-        }
-
-        .card p {
-            color: var(--text-light);
-            line-height: 1.8;
+        .feature-icon {
+            font-size: 3rem;
             margin-bottom: 20px;
+            display: inline-block;
         }
 
-        /* Contact Info */
-        .contact-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 12px;
-            padding: 10px;
-            background: var(--bg-light);
-            border-radius: 5px;
-        }
-
-        .contact-item::before {
-            content: "📱";
+        .feature-card h3 {
             font-size: 1.3rem;
+            margin-bottom: 15px;
+            color: var(--text-main);
         }
 
-        .contact-item.email::before {
-            content: "📧";
+        .feature-card p {
+            color: var(--text-muted);
         }
 
-        .contact-item.address::before {
-            content: "📍";
+        /* Contact Section */
+        .contact-section {
+            padding: 80px 0;
+            background-color: var(--bg-color);
         }
 
-        .contact-item.social::before {
-            content: "🔗";
-        }
-
-        /* Policies Section */
-        .policies-section {
-            background: white;
-            padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
-            margin-bottom: 40px;
-        }
-
-        .policies-section h2 {
-            color: var(--secondary-color);
-            margin-bottom: 25px;
-            font-size: 1.8rem;
-            text-align: center;
-            border-bottom: 3px solid var(--primary-color);
-            padding-bottom: 15px;
-        }
-
-        .policies-grid {
+        .contact-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 15px;
+            gap: 20px;
         }
 
-        .policy-link {
-            display: block;
-            padding: 15px 20px;
-            background: var(--bg-light);
-            color: var(--primary-color);
-            text-decoration: none;
-            border-radius: 8px;
-            border-right: 4px solid var(--primary-color);
-            transition: all 0.3s ease;
+        .contact-item {
+            background: var(--surface-color);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .contact-item:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .contact-label {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .contact-value {
+            font-size: 1.1rem;
             font-weight: 500;
-        }
-
-        .policy-link:hover {
-            background: var(--primary-color);
-            color: white;
-            transform: translateX(-5px);
-            box-shadow: 0 3px 10px rgba(0, 123, 255, 0.3);
+            color: var(--text-main);
+            word-break: break-all;
         }
 
         /* Footer */
         footer {
-            text-align: center;
-            padding: 30px;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
-            color: var(--text-light);
+            background-color: var(--surface-color);
+            padding: 60px 0 30px;
+            border-top: 1px solid var(--border-color);
         }
 
-        footer p {
-            margin-bottom: 10px;
+        .footer-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
         }
 
-        /* Buttons */
-        .btn {
-            display: inline-block;
-            padding: 12px 30px;
-            background: var(--primary-color);
-            color: white;
+        .footer-links {
+            display: flex;
+            gap: 30px;
+        }
+
+        .footer-links a {
+            color: var(--text-muted);
             text-decoration: none;
-            border-radius: 5px;
-            transition: all 0.3s ease;
-            font-weight: bold;
-            border: none;
-            cursor: pointer;
+            font-weight: 500;
+            transition: color 0.3s ease;
         }
 
-        .btn:hover {
-            background: var(--secondary-color);
-            transform: scale(1.05);
+        .footer-links a:hover {
+            color: var(--primary-color);
         }
 
-        /* Responsive */
+        .copyright {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-top: 20px;
+        }
+
         @media (max-width: 768px) {
-            .store-name {
-                font-size: 2rem;
+            .hero h1 {
+                font-size: 2.5rem;
             }
 
-            .hero h2 {
-                font-size: 1.5rem;
+            .hero p {
+                font-size: 1.1rem;
             }
 
-            .content-grid {
-                grid-template-columns: 1fr;
+            .nav-links {
+                display: none;
             }
         }
     </style>
 </head>
 
 <body>
-    <!-- CUSTOMIZATION: Edit store name and tagline -->
+    <!-- Header -->
     <header>
-        <div class="container">
-            <h1 class="store-name">[STORE_NAME]</h1>
+        <div class="container header-content">
+            <a href="#" class="store-name">[STORE_NAME]</a>
+            <nav class="nav-links">
+                <a href="#">الرئيسية</a>
+                <a href="#features">مميزاتنا</a>
+                <a href="#contact">تواصل معنا</a>
+            </nav>
         </div>
     </header>
 
-    <div class="container">
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>مرحباً بكم في متجر<br><span style="color: var(--primary-color);">[STORE_NAME]</span></h1>
+            <p>نقدم لكم أفضل المنتجات بأعلى جودة وأنسب الأسعار. تسوق الآن واستمتع بتجربة شراء استثنائية من راحة منزلك.</p>
+            <a href="#contact" class="btn-primary">تواصل معنا للطلب</a>
+        </div>
+    </section>
 
-        <!-- CUSTOMIZATION: Edit cards content -->
-        <div class="content-grid">
-            <!-- <div class="card">
-                <h3>من نحن</h3>
-                <p>[أضف نبذة مختصرة عن متجرك وما يميزه عن المنافسين. اذكر نوع المنتجات أو الخدمات التي تقدمها.]</p>
-                <a href="#" class="btn">تعرف على المزيد</a>
-            </div>
-
-            <div class="card">
-                <h3>لماذا نحن؟</h3>
-                <p>[أضف المميزات الرئيسية: جودة عالية، أسعار منافسة، توصيل سريع، خدمة عملاء ممتازة، إلخ.]</p>
-                <a href="#" class="btn">تسوق الآن</a>
-            </div> -->
-
-            <div class="card">
-                <h3>تواصل معنا</h3>
-                <!-- CUSTOMIZATION: Edit contact information -->
-                <div class="contact-item">رقم الهاتف: [PHONE]</div>
-                <div class="contact-item email">البريد الالكتروني: [EMAIL]</div>
-                <div class="contact-item address">العنوان: [ADDRESS]</div>
-                <div class="contact-item social">السوشيال ميديا: [LINK]</div>
+    <!-- Features Placeholder -->
+    <section id="features" class="features">
+        <div class="container">
+            <h2 class="section-title">لماذا تتسوق من متجرنا؟</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">✨</div>
+                    <h3>جودة استثنائية</h3>
+                    <p>نحن نضمن لك أعلى معايير الجودة في كل منتج نقدمه، لأن رضاك هو غايتنا الأولى.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🚀</div>
+                    <h3>توصيل سريع</h3>
+                    <p>فريقنا يعمل على مدار الساعة لضمان وصول طلباتك إلى باب منزلك في أسرع وقت ممكن.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🛡️</div>
+                    <h3>تسوق آمن وموثوق</h3>
+                    <p>نوفر لك تجربة تسوق آمنة تماماً مع سياسات واضحة تضمن حقوقك بالكامل.</p>
+                </div>
             </div>
         </div>
+    </section>
 
-        <!-- Policies Section - Linked to policies.html -->
-        <section class="policies-section">
-            <h2>سياسات المتجر</h2>
-            <p style="text-align: center; color: var(--text-light); margin-bottom: 25px;">
-                نحرص على توفير تجربة تسوق شفافة وآمنة. اطلع على سياساتنا:
-            </p>
-            <div class="policies-grid">
-                <a href="policies.html#privacy-policy" class="policy-link">سياسة الخصوصية وحماية البيانات</a>
-                <a href="policies.html#delivery-policy" class="policy-link">سياسة التوصيل</a>
-                <a href="policies.html#return-exchange-policy" class="policy-link">سياسة التبديل والإرجاع</a>
-                <a href="policies.html#warranty-policy" class="policy-link">سياسة الضمان والصيانة</a>
-                <a href="policies.html#compensation-policy" class="policy-link">سياسة التعويض</a>
-                <a href="policies.html#payment-policy" class="policy-link">سياسة الدفع ونوع العملة</a>
-                <a href="policies.html#complaints-policy" class="policy-link">سياسة استقبال الشكاوى</a>
+    <!-- Contact Section -->
+    <section id="contact" class="contact-section">
+        <div class="container">
+            <h2 class="section-title">معلومات التواصل</h2>
+            <div class="contact-grid">
+                <div class="contact-item">
+                    <div class="contact-label">رقم الهاتف</div>
+                    <div class="contact-value" dir="ltr">[PHONE]</div>
+                </div>
+                <div class="contact-item">
+                    <div class="contact-label">البريد الإلكتروني</div>
+                    <div class="contact-value">[EMAIL]</div>
+                </div>
+                <div class="contact-item">
+                    <div class="contact-label">العنوان</div>
+                    <div class="contact-value">[ADDRESS]</div>
+                </div>
+                <div class="contact-item">
+                    <div class="contact-label">مواقع التواصل</div>
+                    <div class="contact-value">[LINK]</div>
+                </div>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <!-- Footer -->
-        <footer>
-            <p>&copy; 2026 [اسم المتجر]. جميع الحقوق محفوظة.</p>
-            <p>تم التصميم بـ ❤️ في فلسطين</p>
-        </footer>
-    </div>
+    <!-- Footer -->
+    <footer>
+        <div class="container footer-content">
+            <h2 class="store-name" style="font-size: 1.5rem;">[STORE_NAME]</h2>
+            <div class="footer-links">
+                <a href="policies.html#privacy-policy">سياسة الخصوصية</a>
+                <a href="policies.html#delivery-policy">التوصيل</a>
+                <a href="policies.html#return-exchange-policy">الإرجاع والتبديل</a>
+                <a href="policies.html">كافة السياسات</a>
+            </div>
+            <p class="copyright">&copy; 2026 [STORE_NAME]. جميع الحقوق محفوظة.</p>
+        </div>
+    </footer>
 </body>
 
 </html>

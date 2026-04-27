@@ -5,276 +5,330 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>سياسات المتجر الإلكتروني</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
+        :root {
+            /* Light & Clean Elegant Theme matching index.html */
+            --primary-color: #3b82f6;
+            --primary-hover: #2563eb;
+            --bg-color: #f8fafc;
+            --surface-color: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --font-family: 'Tajawal', sans-serif;
         }
 
-        h1 {
-            color: #0056b3;
-            border-bottom: 2px solid #eee;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.8;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Header */
+        header {
+            background-color: var(--surface-color);
+            box-shadow: var(--shadow-sm);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            padding: 15px 0;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .back-link {
+            text-decoration: none;
+            color: var(--primary-color);
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: color 0.3s ease;
+        }
+
+        .back-link:hover {
+            color: var(--primary-hover);
+        }
+
+        .page-title {
+            font-weight: 800;
+            color: var(--text-main);
+            font-size: 1.2rem;
+        }
+
+        /* Layout */
+        .layout-container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+            display: flex;
+            gap: 40px;
+            align-items: flex-start;
+        }
+
+        /* Sidebar / TOC */
+        .sidebar {
+            flex: 0 0 300px;
+            position: sticky;
+            top: 100px;
+            background: var(--surface-color);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+        }
+
+        .sidebar h2 {
+            font-size: 1.2rem;
+            color: var(--text-main);
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--border-color);
             padding-bottom: 10px;
         }
 
-        h2,
-        h3 {
-            color: #007bff;
-            margin-top: 25px;
+        .toc-list {
+            list-style: none;
         }
 
-        ul,
-        ol {
-            padding-right: 20px;
+        .toc-list li {
+            margin-bottom: 12px;
         }
 
-        strong {
-            font-weight: bold;
+        .toc-list a {
+            text-decoration: none;
+            color: var(--text-muted);
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            display: block;
+            padding: 8px 12px;
+            border-radius: 8px;
         }
 
-        .table-of-contents {
-            background-color: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 5px;
-            padding: 20px;
-            margin-bottom: 30px;
+        .toc-list a:hover {
+            color: var(--primary-color);
+            background-color: rgba(59, 130, 246, 0.05);
+            transform: translateX(-5px);
         }
 
-        .table-of-contents h2 {
-            color: #0056b3;
-            margin-top: 0;
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            background: var(--surface-color);
+            padding: 50px;
+            border-radius: 16px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+        }
+
+        .policy-section {
+            margin-bottom: 50px;
+        }
+
+        .policy-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .policy-section h1 {
+            color: var(--primary-color);
+            font-size: 2rem;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .policy-section h2 {
+            color: var(--text-main);
+            font-size: 1.3rem;
+            margin-top: 30px;
             margin-bottom: 15px;
         }
 
-        .table-of-contents ul {
-            list-style-type: none;
-            padding-right: 0;
+        .policy-section p {
+            color: var(--text-muted);
+            margin-bottom: 15px;
+            font-size: 1.05rem;
         }
 
-        .table-of-contents li {
+        .policy-section ul, 
+        .policy-section ol {
+            padding-right: 25px;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+            font-size: 1.05rem;
+        }
+
+        .policy-section li {
             margin-bottom: 10px;
         }
 
-        .table-of-contents a {
-            color: #007bff;
-            text-decoration: none;
-            font-size: 16px;
-            transition: color 0.2s;
+        .policy-section strong {
+            color: var(--text-main);
         }
 
-        .table-of-contents a:hover {
-            color: #0056b3;
-            text-decoration: underline;
+        /* Responsive */
+        @media (max-width: 992px) {
+            .layout-container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                flex: none;
+                width: 100%;
+                position: static;
+                margin-bottom: 30px;
+            }
+
+            .main-content {
+                padding: 30px 20px;
+            }
         }
     </style>
 </head>
 
 <body>
+    <!-- Sticky Header -->
+    <header>
+        <div class="header-content">
+            <span class="page-title">مركز السياسات والدعم</span>
+            <a href="index.html" class="back-link">
+                العودة للمتجر <span>&larr;</span>
+            </a>
+        </div>
+    </header>
 
-    <div class="table-of-contents">
-        <h2>فهرس المحتويات</h2>
-        <ul>
-            <li><a href="#privacy-policy">سياسة الخصوصية وحماية البيانات الشخصية</a></li>
-            <li><a href="#delivery-policy">سياسة التوصيل</a></li>
-            <li><a href="#return-exchange-policy">سياسة التبديل والإرجاع</a></li>
-            <li><a href="#warranty-policy">سياسة الضمان والصيانة والدعم الفني</a></li>
-            <li><a href="#compensation-policy">سياسة التعويض</a></li>
-            <li><a href="#payment-policy">سياسة الدفع ونوع العملة</a></li>
-            <li><a href="#complaints-policy">سياسة استقبال ومتابعة الشكاوى</a></li>
-        </ul>
+    <div class="layout-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <h2>فهرس المحتويات</h2>
+            <ul class="toc-list">
+                <li><a href="#privacy-policy">سياسة الخصوصية وحماية البيانات</a></li>
+                <li><a href="#delivery-policy">سياسة التوصيل</a></li>
+                <li><a href="#return-exchange-policy">سياسة التبديل والإرجاع</a></li>
+                <li><a href="#warranty-policy">سياسة الضمان والصيانة</a></li>
+                <li><a href="#compensation-policy">سياسة التعويض</a></li>
+                <li><a href="#payment-policy">سياسة الدفع ونوع العملة</a></li>
+                <li><a href="#complaints-policy">سياسة استقبال الشكاوى</a></li>
+            </ul>
+        </aside>
+
+        <!-- Main Content area -->
+        <main class="main-content">
+            
+            <section id="privacy-policy" class="policy-section">
+                <h1>سياسة الخصوصية وحماية البيانات الشخصية</h1>
+                <h2>مقدمة</h2>
+                <p>نرحب بكم في متجرنا الإلكتروني. نحن ندرك تماماً مسؤوليتنا في حماية بياناتكم الشخصية ونوليها أهمية قصوى. توضح هذه السياسة ماهية المعلومات التي نجمعها، وكيفية استخدامها، والإجراءات التي نتخذها لضمان سريتها وأمانها وفقاً للقوانين والأنظمة المعمول بها.</p>
+
+                <h2>أولاً: المعلومات التي نجمعها</h2>
+                <p>عند استخدامكم للمتجر، قد نقوم بجمع البيانات التالية:</p>
+                <ol>
+                    <li><strong>المعلومات الشخصية:</strong> الاسم، عنوان الشحن، رقم الهاتف، والبريد الإلكتروني.</li>
+                    <li><strong>معلومات الحساب:</strong> اسم المستخدم وكلمة المرور (المشفرة).</li>
+                    <li><strong>المعلومات التقنية:</strong> عنوان بروتوكول الإنترنت (IP)، نوع المتصفح، ومعلومات الكوكيز التي تساعدنا في تحسين تجربتكم.</li>
+                </ol>
+
+                <h2>ثانياً: كيف نستخدم معلوماتكم؟</h2>
+                <p>نستخدم البيانات التي نجمعها للأغراض التالية:</p>
+                <ul>
+                    <li>إتمام عملية الشراء وتوصيل الطلبات إلى عناوينكم.</li>
+                    <li>التواصل معكم بخصوص حالة الطلب أو الرد على استفساراتكم.</li>
+                    <li>تحسين أداء المتجر وتقديم تجربة مستخدم أكثر تخصيصاً.</li>
+                </ul>
+
+                <h2>ثالثاً: حماية وأمن البيانات</h2>
+                <ul>
+                    <li>نحن نطبق إجراءات أمنية تقنية وإدارية صارمة لحماية بياناتكم من الوصول غير المصرح به.</li>
+                    <li>يتم تشفير كافة المعاملات المالية الحساسة باستخدام تقنيات تشفير متطورة.</li>
+                </ul>
+
+                <h2>رابعاً: مشاركة البيانات مع أطراف ثالثة</h2>
+                <p>نحن لا نقوم ببيع أو تأجير بياناتكم الشخصية. قد نشارك بعض البيانات لغرض تشغيل المتجر فقط مع:</p>
+                <ul>
+                    <li><strong>شركات الشحن والتوصيل:</strong> لتزويدهم بالاسم والعنوان لضمان وصول الطلب.</li>
+                    <li><strong>بوابات الدفع الإلكتروني:</strong> لمعالجة العمليات المالية.</li>
+                </ul>
+            </section>
+
+            <section id="delivery-policy" class="policy-section">
+                <h1>سياسة التوصيل</h1>
+                <h2>1. مناطق التوصيل والمدد الزمنية المتوقعة</h2>
+                <ul>
+                    <li><strong>مدن الضفة الغربية:</strong> خلال [24 - 48] ساعة عمل.</li>
+                    <li><strong>القدس وضواحيها:</strong> خلال [2 - 4] أيام عمل.</li>
+                    <li><strong>مناطق الداخل (48):</strong> خلال [3 - 5] أيام عمل.</li>
+                </ul>
+
+                <h2>2. تتبع الطلب واستلامه</h2>
+                <p>بمجرد خروج طلبك مع شركة الشحن، سنقوم بإبلاغك. يجب على العميل التأكد من سلامة الطرد عند الاستلام وإبلاغ المندوب فوراً بوجود أي خلل.</p>
+            </section>
+
+            <section id="return-exchange-policy" class="policy-section">
+                <h1>سياسة التبديل والإرجاع</h1>
+                <p>نحن نحرص على رضاكم الكامل، لذا يتيح المتجر استبدال أو إرجاع المنتجات وفق الضوابط التالية:</p>
+                <ul>
+                    <li><strong>الفترة الزمنية:</strong> الاستبدال أو الإرجاع يتم خلال 3 أيام من تاريخ استلام المنتج.</li>
+                    <li><strong>الحالة الأصلية:</strong> يجب أن يكون المنتج غير مستخدم، وبغلافه الأصلي، مع كافة الملصقات.</li>
+                    <li><strong>تكاليف الشحن:</strong> يتحمل العميل تكلفة الشحن في حال تغيير الرأي، ويتحمل المتجر التكاليف في حال كان المنتج تالفاً.</li>
+                </ul>
+            </section>
+
+            <section id="warranty-policy" class="policy-section">
+                <h1>سياسة الضمان والصيانة</h1>
+                <ul>
+                    <li><strong>الضمان:</strong> تخضع بضائعنا لضمان الوكيل الرسمي أو ضمان المتجر ضد الأعطال المصنعية.</li>
+                    <li><strong>الصيانة:</strong> لا يشمل الضمان الأعطال الناتجة عن سوء الاستخدام أو الكسر أو الحوادث.</li>
+                </ul>
+            </section>
+
+            <section id="compensation-policy" class="policy-section">
+                <h1>سياسة التعويض</h1>
+                <p>يلتزم المتجر بتعويض العميل في الحالات التالية:</p>
+                <ul>
+                    <li><strong>فقدان الشحنة:</strong> يحق للعميل استرداد كامل المبلغ أو إرسال طلب جديد مجاناً.</li>
+                    <li><strong>وصول منتج تالف:</strong> يتم تعويضه بمنتج جديد أو استرداد كامل للمبلغ دون تكاليف إضافية (التبليغ خلال 24 ساعة).</li>
+                </ul>
+            </section>
+
+            <section id="payment-policy" class="policy-section">
+                <h1>سياسة الدفع ونوع العملة</h1>
+                <ul>
+                    <li><strong>العملة المستخدمة:</strong> يتم عرض الأسعار والتعامل المالي بشكل أساسي بـ الشيكل.</li>
+                    <li><strong>طرق الدفع المتوفرة:</strong> الدفع نقداً عند الاستلام، المحافظ الإلكترونية، أو البطاقات الائتمانية.</li>
+                </ul>
+            </section>
+
+            <section id="complaints-policy" class="policy-section">
+                <h1>سياسة استقبال ومتابعة الشكاوى</h1>
+                <ul>
+                    <li>يتم استقبال الشكاوى عبر الموقع الرسمي وصفحاتنا على مواقع التواصل.</li>
+                    <li>نلتزم بالرد الأولي على الشكوى خلال 24 ساعة عمل والوصول لحل يرضي الطرفين خلال 3 أيام.</li>
+                </ul>
+            </section>
+
+        </main>
     </div>
-
-    <h1 id="privacy-policy">سياسة الخصوصية وحماية البيانات الشخصية</h1>
-
-    <h2>مقدمة</h2>
-    <p>نرحب بكم في متجرنا الإلكتروني. نحن ندرك تماماً مسؤوليتنا في حماية بياناتكم الشخصية ونوليها أهمية قصوى. توضح هذه
-        السياسة ماهية المعلومات التي نجمعها، وكيفية استخدامها، والإجراءات التي نتخذها لضمان سريتها وأمانها وفقاً
-        للقوانين والأنظمة المعمول بها.</p>
-
-    <h2>أولاً: المعلومات التي نجمعها</h2>
-    <p>عند استخدامكم للمتجر، قد نقوم بجمع البيانات التالية:</p>
-    <ol>
-        <li><strong>المعلومات الشخصية:</strong> الاسم، عنوان الشحن، رقم الهاتف، والبريد الإلكتروني.</li>
-        <li><strong>معلومات الحساب:</strong> اسم المستخدم وكلمة المرور (المشفرة).</li>
-        <li><strong>المعلومات التقنية:</strong> عنوان بروتوكول الإنترنت (IP)، نوع المتصفح، ومعلومات الكوكيز (Cookies)
-            التي تساعدنا في تحسين تجربتكم.</li>
-    </ol>
-
-    <h2>ثانياً: كيف نستخدم معلوماتكم؟</h2>
-    <p>نستخدم البيانات التي نجمعها للأغراض التالية:</p>
-    <ul>
-        <li>إتمام عملية الشراء وتوصيل الطلبات إلى عناوينكم.</li>
-        <li>التواصل معكم بخصوص حالة الطلب أو الرد على استفساراتكم.</li>
-        <li>إرسال التحديثات والعروض الترويجية (في حال اشتراككم في النشرة البريدية).</li>
-        <li>تحسين أداء المتجر وتقديم تجربة مستخدم أكثر تخصيصاً.</li>
-    </ul>
-
-    <h2>ثالثاً: حماية وأمن البيانات</h2>
-    <ul>
-        <li>نحن نطبق إجراءات أمنية تقنية وإدارية صارمة لحماية بياناتكم من الوصول غير المصرح به، أو التعديل، أو الإفصاح.
-        </li>
-        <li>يتم تشفير كافة المعاملات المالية الحساسة باستخدام تقنيات تشفير متطورة (مثل SSL).</li>
-    </ul>
-
-    <h2>رابعاً: مشاركة البيانات مع أطراف ثالثة</h2>
-    <p>نحن لا نقوم ببيع أو تأجير بياناتكم الشخصية لأي طرف ثالث. ومع ذلك، قد نشارك بعض البيانات مع أطراف موثوقة لغرض
-        تشغيل المتجر فقط، وهم:</p>
-    <ul>
-        <li><strong>شركات الشحن والتوصيل:</strong> لتزويدهم بالاسم والعنوان ورقم الهاتف لضمان وصول الطلب.</li>
-        <li><strong>بوابات الدفع الإلكتروني:</strong> لمعالجة العمليات المالية بشكل آمن.</li>
-        <li><strong>الجهات القانونية:</strong> فقط إذا طُلب منا ذلك بموجب الأنظمة والقوانين السارية في فلسطين.</li>
-    </ul>
-
-    <h2>خامساً: حقوقكم كأصحاب بيانات</h2>
-    <p>لكم الحق الكامل في:</p>
-    <ul>
-        <li>الوصول إلى بياناتكم المخزنة لدينا وطلب نسخة منها.</li>
-        <li>تصحيح أي بيانات غير دقيقة أو تحديثها.</li>
-        <li>طلب حذف بياناتكم من سجلاتنا (ما لم تكن هناك أسباب قانونية تمنع ذلك).</li>
-        <li>إيقاف استقبال الرسائل التسويقية في أي وقت.</li>
-    </ul>
-
-    <h2>سادساً: التزاماتنا القانونية</h2>
-    <p>نؤكد التزامنا التام بكافة التشريعات المحلية، بما في ذلك قانون المعاملات الإلكترونية والأنظمة الصادرة عن الجهات
-        الحكومية الفلسطينية ذات العلاقة، لضمان أعلى معايير الشفافية والنزاهة.</p>
-
-    <h2>سابعاً: التحديثات على السياسة</h2>
-    <p>نحتفظ بالحق في تحديث سياسة الخصوصية هذه عند الحاجة. سيتم نشر أي تغييرات على هذه الصفحة، وننصحكم بمراجعتها بشكل
-        دوري.</p>
-
-    <h2>ثامناً: سياسة ملفات تعريف الارتباط (Cookies)</h2>
-    <p>نحن نستخدم ملفات تعريف الارتباط لتحسين تجربتك على موقعنا، وهي ملفات نصية صغيرة تُحفظ على جهازك عند زيارة المتجر.
-        نستخدمها للأغراض التالية:</p>
-    <ul>
-        <li><strong>تحسين الأداء:</strong> تذكر تفضيلاتك (مثل اللغة) ومحتويات سلة التسوق الخاصة بك.</li>
-        <li><strong>التحليلات:</strong> فهم كيفية تفاعل الزوار مع المتجر لنتمكن من تطوير الأقسام الأكثر استخداماً.</li>
-        <li><strong>الإعلانات:</strong> عرض عروض قد تهمك بناءً على اهتماماتك السابقة.</li>
-    </ul>
-    <p><strong>ملاحظة:</strong> يمكنك التحكم في إعدادات ملفات تعريف الارتباط أو رفضها من خلال إعدادات متصفحك، ولكن قد
-        يؤثر ذلك على كفاءة بعض ميزات المتجر.</p>
-
-    <h2>تاسعاً: التواصل بخصوص الخصوصية</h2>
-    <p>إذا كان لديك أي استفسار حول سياسة الخصوصية، أو كنت ترغب في ممارسة حقوقك في الوصول إلى بياناتك أو حذفها، يمكنك
-        التواصل مع فريقنا من خلال موقعنا وصفحاتنا على مواقع التواصل الاجتماعي.</p>
-    <p>نحن نلتزم بالرد على كافة الطلبات المتعلقة بالخصوصية خلال 3 أيام عمل.</p>
-    <br>
-
-    <hr>
-
-    <h1 id="delivery-policy">سياسة التوصيل</h1>
-
-    <h2>1. مقدمة</h2>
-    <p>نحن نسعى جاهدين لضمان وصول طلباتكم في أسرع وقت ممكن وبأفضل حالة. توضح هذه السياسة كافة التفاصيل المتعلقة بآلية
-        الشحن والتوصيل لمتجرنا.</p>
-
-    <h2>2. مناطق التوصيل والمدد الزمنية المتوقعة</h2>
-    <p>نقدم خدمة التوصيل إلى كافة المناطق وفقاً للجدول الزمني التقريبي التالي:</p>
-    <ul>
-        <li><strong>مدن الضفة الغربية:</strong> خلال [24 - 48] ساعة عمل.</li>
-        <li><strong>القدس وضواحيها:</strong> خلال [2 - 4] أيام عمل.</li>
-        <li><strong>مناطق الداخل (48):</strong> خلال [3 - 5] أيام عمل.</li>
-        <li><strong>قطاع غزة:</strong> (يتم تحديد المدة بناءً على توفر الظروف اللوجستية والمعابر).</li>
-    </ul>
-
-    <h2>3. رسوم التوصيل</h2>
-    <ul>
-        <li>يتم احتساب رسوم التوصيل بناءً على المنطقة الجغرافية وتظهر التكلفة النهائية في صفحة "إتمام الطلب".</li>
-        <li>قد نوفر خدمة <strong>"التوصيل المجاني"</strong> في حالات العروض الخاصة أو عند تجاوز قيمة الطلب مبلغاً
-            معيناً.</li>
-    </ul>
-
-    <h2>4. آلية معالجة الطلبات</h2>
-    <ul>
-        <li>يتم تجهيز الطلبات المسجلة قبل نهاية الدوام في نفس اليوم، أما الطلبات بعد ذلك فيتم تجهيزها في يوم العمل
-            التالي.</li>
-        <li>لا يتم الشحن في أيام العطل الرسمية وأيام الجمعة.</li>
-    </ul>
-
-    <h2>5. تتبع الطلب</h2>
-    <p>بمجرد خروج طلبك مع شركة الشحن، سنقوم بإبلاغك حتى تتمكن من ترتيب استلام الطلب.</p>
-
-    <h2>6. استلام الشحنة</h2>
-    <ul>
-        <li>يجب على العميل التأكد من سلامة الطرد عند الاستلام. في حال وجود تلف ظاهر في التغليف، يرجى إبلاغ المندوب فوراً
-            والتواصل معنا.</li>
-        <li>يعتبر توقيعك على إيصال الاستلام (أو استلامك للمنتج من المندوب) بمثابة إقرار بأن الطرد بحالة جيدة.</li>
-    </ul>
-
-    <h2>7. تعذر التسليم</h2>
-    <p>في حال تعذر الوصول إلى العميل بسبب (خطأ في العنوان، أو عدم الرد على الهاتف)، سيقوم مندوب الشحن بمحاولة الاتصال
-        مرة أخرى. إذا فشلت المحاولات، قد يتم إرجاع الطلب إلى مستودعاتنا، ويتحمل العميل تكلفة إعادة الشحن في حال رغب في
-        إرساله مرة أخرى.</p>
-
-    <hr>
-
-    <h1 id="return-exchange-policy">سياسة التبديل والإرجاع</h1>
-
-    <p>نحن نحرص على رضاكم الكامل، لذا يتيح المتجر استبدال أو إرجاع المنتجات وفق الضوابط التالية:</p>
-    <ul>
-        <li><strong>الفترة الزمنية:</strong> الاستبدال أو الإرجاع يتم خلال 3 أيام من تاريخ استلام المنتج.</li>
-        <li><strong>الحالة الأصلية:</strong> يجب أن يكون المنتج غير مستخدم، وبغلافه الأصلي، مع وجود كافة "التاغات"
-            والملصقات.</li>
-        <li><strong>تكاليف الشحن:</strong> يتحمل العميل تكلفة الشحن في حال رغبته بالتبديل "لتغيير رأيه"، بينما يتحمل
-            المتجر كافة التكاليف في حال كان المنتج تالفاً أو مخالفاً للطلب.</li>
-    </ul>
-
-    <hr>
-
-    <h1 id="warranty-policy">سياسة الضمان والصيانة والدعم الفني</h1>
-    <ul>
-        <li><strong>الضمان:</strong> تخضع بضائعنا لضمان الوكيل الرسمي أو ضمان المتجر ضد الأعطال المصنعية لمدة محددة حسب
-            المنتج نفسه، يمكن التأكد من تفاصيل الضمان عند الطلب.</li>
-        <li><strong>الصيانة:</strong> لا يشمل الضمان الأعطال الناتجة عن سوء الاستخدام، أو الكسر، أو الحوادث، أو استخدام
-            تيار كهربائي غير متوافق.</li>
-        <li><strong>الدعم الفني:</strong> نوفر خدمة دعم فني عبر صفحاتنا الرسمية ووسائل التواصل الاجتماعي لمساعدتكم والرد
-            على استفساراتكم خلال ساعات العمل الرسمية.</li>
-    </ul>
-
-    <hr>
-
-    <h1 id="compensation-policy">سياسة التعويض</h1>
-    <p>يلتزم المتجر بتعويض العميل في الحالات التالية:</p>
-    <ul>
-        <li><strong>فقدان الشحنة:</strong> في حال ضياع الشحنة من قبل شركة التوصيل، يحق للعميل استرداد كامل المبلغ أو
-            إرسال طلب جديد مجاناً.</li>
-        <li><strong>وصول منتج تالف:</strong> إذا استلم العميل منتجاً مكسوراً أو تالفاً، يتم تعويضه بمنتج جديد أو استرداد
-            كامل للمبلغ دون أي تكاليف إضافية، بشرط الإبلاغ خلال 24 ساعة من الاستلام.</li>
-        <li><strong>خطأ في الطلب:</strong> في حال إرسال الطلب بمواصفات مختلفة عن ما طلبه الزبون، نتحمل مسؤولية استبداله
-            فوراً.</li>
-    </ul>
-
-    <hr>
-
-    <h1 id="payment-policy">سياسة الدفع ونوع العملة</h1>
-    <ul>
-        <li><strong>العملة المستخدمة:</strong> يتم عرض الأسعار والتعامل المالي بشكل أساسي بـ الشيكل.</li>
-        <li><strong>طرق الدفع:</strong>
-            <ol>
-                <li>الدفع نقداً عند الاستلام.</li>
-                <li>الدفع عبر المحافظ الإلكترونية المتوفرة محلياً.</li>
-                <li>الدفع عبر البطاقات الائتمانية (في حال الربط مع بوابات الدفع الإلكتروني).</li>
-            </ol>
-        </li>
-        <li><strong>الرسوم الإضافية:</strong> يتم توضيح رسوم التوصيل بشكل منفصل قبل تأكيد الطلب ولا توجد أي رسوم مخفية.
-        </li>
-    </ul>
-
-    <hr>
-
-    <h1 id="complaints-policy">سياسة استقبال ومتابعة الشكاوى</h1>
-    <p>نحن نقدر ملاحظاتكم ونسعى لحل أي مشكلة تواجهكم:</p>
-    <ul>
-        <li><strong>قنوات الشكاوى:</strong> يتم استقبال الشكاوى عبر الموقع الرسمي وصفحاتنا على مواقع التواصل الاجتماعي.
-        </li>
-        <li><strong>وقت الاستجابة:</strong> نلتزم بالرد الأولي على الشكوى خلال 24 ساعة عمل.</li>
-        <li><strong>آلية الحل:</strong> يتم دراسة الشكوى والتواصل مع العميل للوصول إلى حل يرضي الطرفين خلال مدة أقصاها 3
-            أيام عمل من تاريخ استلامها.</li>
-    </ul>
-
 </body>
 
 </html>
