@@ -834,6 +834,9 @@ async def add_domain(
     
     user_id = request.session.get("user_id")
     
+    if not any([facebook_url, instagram_url, tiktok_url]):
+        return RedirectResponse(url="/dashboard?error=missing_social_media", status_code=303)
+
     # Normalize and validate social media URLs
     normalized_fb, normalized_ig, normalized_tt = None, None, None
     if facebook_url and facebook_url.strip():
@@ -977,6 +980,9 @@ async def edit_domain(
     if not domain:
         return RedirectResponse(url="/dashboard?error=domain_not_found", status_code=303)
     
+    if not any([facebook_url, instagram_url, tiktok_url]):
+        return RedirectResponse(url="/dashboard?error=missing_social_media", status_code=303)
+
     # Normalize and validate social media URLs
     normalized_fb, normalized_ig, normalized_tt = None, None, None
     if facebook_url and facebook_url.strip():

@@ -311,6 +311,12 @@
         const fbInput = document.getElementById('facebook_url');
         const igInput = document.getElementById('instagram_url');
         const ttInput = document.getElementById('tiktok_url');
+        if (!fbInput.value.trim() && !igInput.value.trim() && !ttInput.value.trim()) {
+            e.preventDefault();
+            alert('يرجى إضافة رابط واحد على الأقل من روابط السوشيال ميديا');
+            return;
+        }
+        
         const urlPattern = /^https?:\/\/[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*(\/.*)?$/;
 
         function validateUrl(inputElement) {
@@ -453,6 +459,13 @@
         const fbInput = document.getElementById('edit_facebook_url');
         const igInput = document.getElementById('edit_instagram_url');
         const ttInput = document.getElementById('edit_tiktok_url');
+        
+        if (!fbInput.value.trim() && !igInput.value.trim() && !ttInput.value.trim()) {
+            e.preventDefault();
+            alert('يرجى إضافة رابط واحد على الأقل من روابط السوشيال ميديا');
+            return;
+        }
+
         const urlPattern = /^https?:\/\/[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*(\/.*)?$/;
 
         function validateUrl(inputElement) {
