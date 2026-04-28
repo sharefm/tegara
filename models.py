@@ -25,7 +25,9 @@ class Domain(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     domain_name = Column(String, unique=True, nullable=False, index=True)
     domain_type = Column(String, nullable=False)  # 'custom' or 'temp'
-    social_media_url = Column(String, nullable=False)  # URL to redirect to
+    facebook_url = Column(String, nullable=True)  # Facebook URL
+    instagram_url = Column(String, nullable=True) # Instagram URL
+    tiktok_url = Column(String, nullable=True)    # TikTok URL
     store_name = Column(String, nullable=True)  # Store/business name
     email = Column(String, nullable=True)       # Store email
     address = Column(String, nullable=True)     # Store address

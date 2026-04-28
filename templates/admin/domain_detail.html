@@ -50,8 +50,16 @@
                     value="{{ domain.expiry_date.strftime('%Y-%m-%d') if domain.expiry_date else '' }}">
             </div>
             <div class="form-group" style="grid-column:1/-1;">
-                <label for="social_media_url">Social Media URL</label>
-                <input type="url" id="social_media_url" name="social_media_url" value="{{ domain.social_media_url }}">
+                <label for="facebook_url">Facebook URL</label>
+                <input type="url" id="facebook_url" name="facebook_url" value="{{ domain.facebook_url or '' }}">
+            </div>
+            <div class="form-group" style="grid-column:1/-1;">
+                <label for="instagram_url">Instagram URL</label>
+                <input type="url" id="instagram_url" name="instagram_url" value="{{ domain.instagram_url or '' }}">
+            </div>
+            <div class="form-group" style="grid-column:1/-1;">
+                <label for="tiktok_url">TikTok URL</label>
+                <input type="url" id="tiktok_url" name="tiktok_url" value="{{ domain.tiktok_url or '' }}">
             </div>
             <div class="form-group">
                 <label for="store_name">Store Name</label>

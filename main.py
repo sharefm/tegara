@@ -824,7 +824,9 @@ async def add_domain(
     custom_store_name: str = Form(None),
     address: str = Form(None),
     email: str = Form(None),
-    social_media_url: str = Form(...),
+    facebook_url: str = Form(None),
+    instagram_url: str = Form(None),
+    tiktok_url: str = Form(None),
     db: Session = Depends(get_db)
 ):
     if not request.session.get("authenticated"):
@@ -832,10 +834,17 @@ async def add_domain(
     
     user_id = request.session.get("user_id")
     
-    # Normalize and validate social media URL
-    is_valid_url, normalized_url = normalize_and_validate_url(social_media_url)
-    if not is_valid_url:
-        return RedirectResponse(url="/dashboard?error=invalid_url", status_code=303)
+    # Normalize and validate social media URLs
+    normalized_fb, normalized_ig, normalized_tt = None, None, None
+    if facebook_url and facebook_url.strip():
+        is_valid, normalized_fb = normalize_and_validate_url(facebook_url)
+        if not is_valid: return RedirectResponse(url="/dashboard?error=invalid_url", status_code=303)
+    if instagram_url and instagram_url.strip():
+        is_valid, normalized_ig = normalize_and_validate_url(instagram_url)
+        if not is_valid: return RedirectResponse(url="/dashboard?error=invalid_url", status_code=303)
+    if tiktok_url and tiktok_url.strip():
+        is_valid, normalized_tt = normalize_and_validate_url(tiktok_url)
+        if not is_valid: return RedirectResponse(url="/dashboard?error=invalid_url", status_code=303)
     
     # Determine domain name based on type
     if domain_type == "custom":
@@ -861,7 +870,9 @@ async def add_domain(
         user_id=user_id,
         domain_name=domain_name,
         domain_type=domain_type,
-        social_media_url=normalized_url,
+        facebook_url=normalized_fb,
+        instagram_url=normalized_ig,
+        tiktok_url=normalized_tt,
         store_name=custom_store_name,
         email=email,
         address=address,
@@ -890,7 +901,7 @@ async def add_domain(
         phone=phone,
         address=address or "",
         email=email or "",
-        social_media=[normalized_url]
+        social_media=[normalized_fb, normalized_ig, normalized_tt]
     )
     
     if setup_success:
@@ -947,7 +958,9 @@ async def edit_domain(
     custom_store_name: str = Form(None),
     address: str = Form(None),
     email: str = Form(None),
-    social_media_url: str = Form(...),
+    facebook_url: str = Form(None),
+    instagram_url: str = Form(None),
+    tiktok_url: str = Form(None),
     db: Session = Depends(get_db)
 ):
     if not request.session.get("authenticated"):
@@ -964,10 +977,17 @@ async def edit_domain(
     if not domain:
         return RedirectResponse(url="/dashboard?error=domain_not_found", status_code=303)
     
-    # Normalize and validate social media URL
-    is_valid_url, normalized_url = normalize_and_validate_url(social_media_url)
-    if not is_valid_url:
-        return RedirectResponse(url="/dashboard?error=invalid_url", status_code=303)
+    # Normalize and validate social media URLs
+    normalized_fb, normalized_ig, normalized_tt = None, None, None
+    if facebook_url and facebook_url.strip():
+        is_valid, normalized_fb = normalize_and_validate_url(facebook_url)
+        if not is_valid: return RedirectResponse(url="/dashboard?error=invalid_url", status_code=303)
+    if instagram_url and instagram_url.strip():
+        is_valid, normalized_ig = normalize_and_validate_url(instagram_url)
+        if not is_valid: return RedirectResponse(url="/dashboard?error=invalid_url", status_code=303)
+    if tiktok_url and tiktok_url.strip():
+        is_valid, normalized_tt = normalize_and_validate_url(tiktok_url)
+        if not is_valid: return RedirectResponse(url="/dashboard?error=invalid_url", status_code=303)
     
     # Determine new domain name based on type
     if domain_type == "custom":
@@ -1010,7 +1030,9 @@ async def edit_domain(
     # Update domain in database
     domain.domain_name = new_domain_name
     domain.domain_type = domain_type
-    domain.social_media_url = normalized_url
+    domain.facebook_url = normalized_fb
+    domain.instagram_url = normalized_ig
+    domain.tiktok_url = normalized_tt
     domain.store_name = custom_store_name
     domain.email = email
     domain.address = address
@@ -1030,7 +1052,7 @@ async def edit_domain(
         phone=phone,
         address=address or "",
         email=email or "",
-        social_media=[normalized_url]
+        social_media=[normalized_fb, normalized_ig, normalized_tt]
     )
     
     if setup_success:
@@ -1247,7 +1269,8 @@ async def admin_domain_update(
     domain_id: int, request: Request, db: Session = Depends(get_db),
     domain_name: str = Form(...), domain_type: str = Form(...),
     subscription_status: str = Form(...), is_active: int = Form(...),
-    social_media_url: str = Form(...), store_name: str = Form(""),
+    facebook_url: str = Form(None), instagram_url: str = Form(None), tiktok_url: str = Form(None), 
+    store_name: str = Form(""),
     expiry_date: str = Form("")
 ):
     require_admin(request)
@@ -1258,7 +1281,9 @@ async def admin_domain_update(
     domain.domain_type = domain_type
     domain.subscription_status = subscription_status
     domain.is_active = is_active
-    domain.social_media_url = social_media_url
+    domain.facebook_url = facebook_url
+    domain.instagram_url = instagram_url
+    domain.tiktok_url = tiktok_url
     domain.store_name = store_name or None
     domain.expiry_date = datetime.strptime(expiry_date, "%Y-%m-%d") if expiry_date else None
     db.commit()
