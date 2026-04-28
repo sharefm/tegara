@@ -71,6 +71,17 @@
                     title="يجب أن يكون دومين صحيح باللغة الإنجليزية (مثال: domain.ps)">
             </div>
 
+            <div class="form-group" id="dns_instructions" style="display: none; background-color: #f0f8ff; border: 1px solid #b8daff; color: #004085; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 0.95em; line-height: 1.6;">
+                <p style="margin-top: 0; margin-bottom: 10px; font-weight: bold;">🌐 خطوات ربط الدومين الخاص بك</p>
+                <p style="margin-top: 0; margin-bottom: 10px;">لكي يعمل الدومين بنجاح، يرجى الدخول إلى لوحة تحكم الدومين الخاص بك (مثل: GoDaddy أو Namecheap) وإضافة سجل DNS التالي:</p>
+                <div style="background-color: #fff; padding: 10px; border-radius: 4px; margin-bottom: 10px; direction: ltr; text-align: left; font-family: monospace; border: 1px solid #dee2e6;">
+                    <span style="color: #6c757d;">Type:</span> CNAME<br>
+                    <span style="color: #6c757d;">Name/Host:</span> www<br>
+                    <span style="color: #6c757d;">Value/Points to:</span> host.tejara.ps
+                </div>
+                <p style="margin-bottom: 0; font-size: 0.9em;">💡 <strong>ملاحظة:</strong> قد يستغرق تفعيل الدومين بعض الوقت. إذا احتجت مساعدة في عملية الربط، لا تتردد في <a href="https://wa.me/" target="_blank" style="text-decoration: underline; color: #0056b3; font-weight: bold;">التواصل معنا عبر الواتساب</a>.</p>
+            </div>
+
             <div class="form-group" id="custom_store_name_field">
                 <label for="custom_store_name">اسم المتجر</label>
                 <input type="text" id="custom_store_name" name="custom_store_name"
@@ -217,6 +228,17 @@
                     title="يجب أن يكون دومين صحيح باللغة الإنجليزية (مثال: domain.ps)">
             </div>
 
+            <div class="form-group" id="edit_dns_instructions" style="display: none; background-color: #f0f8ff; border: 1px solid #b8daff; color: #004085; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 0.95em; line-height: 1.6;">
+                <p style="margin-top: 0; margin-bottom: 10px; font-weight: bold;">🌐 خطوات ربط الدومين الخاص بك</p>
+                <p style="margin-top: 0; margin-bottom: 10px;">لكي يعمل الدومين بنجاح، يرجى الدخول إلى لوحة تحكم الدومين الخاص بك (مثل: GoDaddy أو Namecheap) وإضافة سجل DNS التالي:</p>
+                <div style="background-color: #fff; padding: 10px; border-radius: 4px; margin-bottom: 10px; direction: ltr; text-align: left; font-family: monospace; border: 1px solid #dee2e6;">
+                    <span style="color: #6c757d;">Type:</span> CNAME<br>
+                    <span style="color: #6c757d;">Name/Host:</span> www<br>
+                    <span style="color: #6c757d;">Value/Points to:</span> host.tejara.ps
+                </div>
+                <p style="margin-bottom: 0; font-size: 0.9em;">💡 <strong>ملاحظة:</strong> قد يستغرق تفعيل الدومين بعض الوقت. إذا احتجت مساعدة في عملية الربط، لا تتردد في <a href="https://wa.me/" target="_blank" style="text-decoration: underline; color: #0056b3; font-weight: bold;">التواصل معنا عبر الواتساب</a>.</p>
+            </div>
+
             <div class="form-group" id="edit_custom_store_name_field">
                 <label for="edit_custom_store_name">اسم المتجر</label>
                 <input type="text" id="edit_custom_store_name" name="custom_store_name"
@@ -281,11 +303,13 @@
     function toggleDomainFields() {
         if (customDomainRadio.checked) {
             customDomainField.style.display = 'block';
+            document.getElementById('dns_instructions').style.display = 'block';
             tempDomainField.style.display = 'none';
             customDomainInput.required = true;
             storeNameInput.required = false;
         } else {
             customDomainField.style.display = 'none';
+            document.getElementById('dns_instructions').style.display = 'none';
             tempDomainField.style.display = 'block';
             customDomainInput.required = false;
             storeNameInput.required = true;
@@ -429,11 +453,13 @@
     function toggleEditDomainFields() {
         if (editCustomDomainRadio.checked) {
             editCustomDomainField.style.display = 'block';
+            document.getElementById('edit_dns_instructions').style.display = 'block';
             editTempDomainField.style.display = 'none';
             editCustomDomainInput.required = true;
             editStoreNameInput.required = false;
         } else {
             editCustomDomainField.style.display = 'none';
+            document.getElementById('edit_dns_instructions').style.display = 'none';
             editTempDomainField.style.display = 'block';
             editCustomDomainInput.required = false;
             editStoreNameInput.required = true;
