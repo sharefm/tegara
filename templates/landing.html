@@ -4,48 +4,63 @@
 
 {% block content %}
 <div class="container">
-    <div class="card landing-card">
-        <div class="logo">
+    <div class="card landing-card" style="text-align: right; direction: rtl;">
+        <div class="logo" style="text-align: center;">
             <img src="/static/header.jpg" alt="تجارة فلسطين"
                 style="max-width: 100%; border-radius: 12px; margin-bottom: 10px;">
-            <p class="tagline">بوابة التجارة - بدايتك مع التجارة الالكترونية</p>
         </div>
 
-        <div class="welcome-section">
-            <img src="/static/landing1.jpg" alt="مرحباً بك في تجارة فلسطين" class="landing-image">
+        <div class="welcome-section" style="margin-top: 20px; text-align: right;">
+            <h2 style="color: var(--primary-light); font-size: 1.8rem; margin-bottom: 15px;">صاحب متجر أونلاين؟</h2>
+            <p class="welcome-text">
+                بتعرف إنه صار لازم تسجل رسمياً لدى وزارة الاقتصاد الفلسطيني .. لكن خايف "قانون التجارة الالكترونية" الجديد يغير طريقة شغلك؟<br><br>
+                الشروط ممكن تبين صعبة (موقع إلكتروني، سياسات خصوصية، شهادات حماية...)، بس إحنا اختصرنا عليك كل الطريق.
+            </p>
         </div>
 
-        <div class="features-grid">
-            <div class="feature-item">
-                <div class="feature-icon">🌐</div>
-                <h3>دومين فرعي مجاني</h3>
-                <p>احصل على نطاق فرعي مجاني لتجربة الخدمة</p>
+        <div class="features-list" style="margin: 30px 0; background: rgba(255, 255, 255, 0.05); padding: 25px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1);">
+            <h3 style="color: var(--text-light); margin-bottom: 20px; font-size: 1.3rem;">بمنصة Tejara.ps، بنجهزلك "هوية متجرك القانونية" في دقائق:</h3>
+            <ul style="list-style-type: none; padding: 0; margin: 0;">
+                <li style="margin-bottom: 15px; font-size: 1.05rem; display: flex; align-items: flex-start; gap: 10px;">
+                    <span>✅</span>
+                    <span style="color: var(--text-muted); line-height: 1.6;">رابط فلسطيني رسمي للمتجر.</span>
+                </li>
+                <li style="margin-bottom: 15px; font-size: 1.05rem; display: flex; align-items: flex-start; gap: 10px;">
+                    <span>✅</span>
+                    <span style="color: var(--text-muted); line-height: 1.6;">سياسات جاهزة (الخصوصية، الإرجاع، والتبديل ... وغيره مع امكانية التعديل بما يناسبك).</span>
+                </li>
+                <li style="margin-bottom: 15px; font-size: 1.05rem; display: flex; align-items: flex-start; gap: 10px;">
+                    <span>✅</span>
+                    <span style="color: var(--text-muted); line-height: 1.6;">روابط حسابات السوشيال ميديا الخاصة فيك.</span>
+                </li>
+                <li style="margin-bottom: 0; font-size: 1.05rem; display: flex; align-items: flex-start; gap: 10px;">
+                    <span>✅</span>
+                    <span style="color: var(--text-muted); line-height: 1.6;">أمان كامل واتصال مشفر (HTTPS).</span>
+                </li>
+            </ul>
+        </div>
+
+        <div class="why-us-section" style="margin: 30px 0;">
+            <h3 style="color: var(--primary-light); font-size: 1.5rem; margin-bottom: 15px;">ليش تختارنا؟</h3>
+            <p class="welcome-text">
+                لأننا بنعرف إنك بتفضل تبيع بطريقتك المعتادة عبر الرسائل والواتس، فما بنغير عليك نظام شغلك. إحنا بنوفرلك الموقع والدومين والسياسات والروابط وشهادة تشفير الموقع بدون ما تحتاج إلى خبير برمجة ولا سيرفرات.<br><br>
+                <strong style="color: var(--text-light);">اشترك معنا وخلال دقائق تصبح جاهز للتسجيل مع الوزارة.</strong><br><br>
+                <span style="color: var(--primary-light); font-size: 1.2rem; font-weight: bold;">ايش بتستنى .... اسبق المنافسين!</span>
+            </p>
+        </div>
+
+        <div class="cta-section" style="text-align: center; margin-top: 40px; padding-top: 30px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+            <h3 style="margin-bottom: 25px; font-size: 1.6rem; color: var(--text-light);">سجل الآن وخلي تجارتك بالسليم!</h3>
+            <div class="cta-buttons" style="flex-direction: row; justify-content: center; flex-wrap: wrap; margin-top: 0;">
+                <a href="/register" class="btn btn-primary btn-large" style="flex: 1; min-width: 200px;">
+                    <span class="btn-icon">✨</span>
+                    إنشاء حساب جديد
+                </a>
+                <a href="/login" class="btn btn-secondary btn-large" style="flex: 1; min-width: 200px;">
+                    <span class="btn-icon">🔑</span>
+                    تسجيل الدخول
+                </a>
             </div>
-            <div class="feature-item">
-                <div class="feature-icon">🔒</div>
-                <h3>آمن وموثوق</h3>
-                <p>نظام حماية متقدم لبياناتك</p>
-            </div>
-            <div class="feature-item">
-                <div class="feature-icon">📱</div>
-                <h3>سهل الاستخدام</h3>
-                <p>واجهة بسيطة وسهلة الإدارة</p>
-            </div>
-        </div>
-
-        <div class="cta-buttons">
-            <a href="/register" class="btn btn-primary btn-large">
-                <span class="btn-icon">✨</span>
-                إنشاء حساب جديد
-            </a>
-            <a href="/login" class="btn btn-secondary btn-large">
-                <span class="btn-icon">🔑</span>
-                تسجيل الدخول
-            </a>
-        </div>
-
-        <div class="footer-note">
-            <p>هل لديك حساب بالفعل؟ <a href="/login">سجل دخولك الآن</a></p>
         </div>
     </div>
 </div>
