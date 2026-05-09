@@ -1412,3 +1412,7 @@ async def cron_job(request: Request, db: Session = Depends(get_db)):
         "domains_expired": expired_count,
         "otp_sessions_deleted": deleted_otp,
     }
+
+@app.exception_handler(404)
+async def not_found_exception_handler(request: Request, exc: Exception):
+    return RedirectResponse(url="https://www.tejara.ps/dashboard", status_code=303)
