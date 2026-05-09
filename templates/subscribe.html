@@ -9,6 +9,7 @@
         <div class="subscribe-header">
             <a href="/dashboard" class="back-link">← العودة للوحة التحكم</a>
             <h1 class="subscribe-title">اشترك الآن</h1>
+            {% if domain %}
             <div class="domain-display">
                 <span class="domain-label">الدومين:</span>
                 <span class="domain-name-large">{{ domain.domain_name }}</span>
@@ -17,6 +18,9 @@
             <p class="status-message">أنت حالياً في الفترة التجريبية. اختر خطة الاشتراك المناسبة لك:</p>
             {% elif domain.subscription_status == 'expired' %}
             <p class="status-message expired">انتهى اشتراكك. قم بتجديد الاشتراك للاستمرار:</p>
+            {% endif %}
+            {% else %}
+            <p class="status-message">اختر خطة الاشتراك المناسبة لك:</p>
             {% endif %}
         </div>
 
@@ -40,7 +44,7 @@
                     <li>✓ استضافة مع شهادة SSL</li>
 
                 </ul>
-                <button class="btn btn-plan" onclick="selectPlan('{{ domain.id }}', 3)">اختر هذه الخطة</button>
+                <button class="btn btn-plan" onclick="selectPlan('{{ domain.id if domain else '' }}', 3)">اختر هذه الخطة</button>
             </div>
 
             <!-- 6 Months Plan -->
@@ -61,7 +65,7 @@
                     <li>✓ استضافة مع شهادة SSL</li>
 
                 </ul>
-                <button class="btn btn-plan btn-plan-popular" onclick="selectPlan('{{ domain.id }}', 6)">اختر هذه
+                <button class="btn btn-plan btn-plan-popular" onclick="selectPlan('{{ domain.id if domain else '' }}', 6)">اختر هذه
                     الخطة</button>
             </div>
 
@@ -82,7 +86,7 @@
                     <li>✓ استضافة مع شهادة SSL</li>
                     <li>✓ أولوية في الخدمات</li>
                 </ul>
-                <button class="btn btn-plan" onclick="selectPlan('{{ domain.id }}', 12)">اختر هذه الخطة</button>
+                <button class="btn btn-plan" onclick="selectPlan('{{ domain.id if domain else '' }}', 12)">اختر هذه الخطة</button>
             </div>
         </div>
     </div>
@@ -107,7 +111,12 @@
 
     function selectPlan(domainId, months) {
         if (!isAuthenticated) {
-            window.location.href = '/login?next=/subscribe/' + domainId;
+            window.location.href = domainId ? ('/login?next=/subscribe/' + domainId) : '/login?next=/dashboard';
+            return;
+        }
+
+        if (!domainId) {
+            window.location.href = '/dashboard';
             return;
         }
 

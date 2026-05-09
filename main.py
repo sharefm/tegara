@@ -1074,23 +1074,38 @@ async def edit_domain(
     
     return RedirectResponse(url="/dashboard?success=domain_updated", status_code=303)
 
+@app.get("/subscribe", response_class=HTMLResponse)
+async def subscribe_general_page(request: Request):
+    authenticated = request.session.get("authenticated", False)
+    return templates.TemplateResponse(
+        "subscribe.html",
+        {
+            "request": request,
+            "domain": None,
+            "authenticated": authenticated
+        }
+    )
+
 @app.get("/subscribe/{domain_id}", response_class=HTMLResponse)
-async def subscribe_page(
+async def subscribe_domain_page(
     domain_id: int,
     request: Request,
     db: Session = Depends(get_db)
 ):
     authenticated = request.session.get("authenticated", False)
-    user_id = request.session.get("user_id") if authenticated else None
     
-    # Get domain
-    domain = db.query(Domain).filter(Domain.id == domain_id).first()
+    if not authenticated:
+        return RedirectResponse(url=f"/login?next=/subscribe/{domain_id}", status_code=303)
+        
+    user_id = request.session.get("user_id")
+    
+    # Get domain and verify ownership
+    domain = db.query(Domain).filter(
+        Domain.id == domain_id,
+        Domain.user_id == user_id
+    ).first()
     
     if not domain:
-        return RedirectResponse(url="/dashboard?error=domain_not_found", status_code=303)
-        
-    # Verify ownership if user is authenticated
-    if authenticated and domain.user_id != user_id:
         return RedirectResponse(url="/dashboard?error=domain_not_found", status_code=303)
     
     return templates.TemplateResponse(
