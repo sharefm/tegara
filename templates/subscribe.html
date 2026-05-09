@@ -44,7 +44,8 @@
                     <li>✓ استضافة مع شهادة SSL</li>
 
                 </ul>
-                <button class="btn btn-plan" onclick="selectPlan('{{ domain.id if domain else '' }}', 3)">اختر هذه الخطة</button>
+                <button class="btn btn-plan" onclick="selectPlan('{{ domain.id if domain else '' }}', 3)">اختر هذه
+                    الخطة</button>
             </div>
 
             <!-- 6 Months Plan -->
@@ -65,7 +66,8 @@
                     <li>✓ استضافة مع شهادة SSL</li>
 
                 </ul>
-                <button class="btn btn-plan btn-plan-popular" onclick="selectPlan('{{ domain.id if domain else '' }}', 6)">اختر هذه
+                <button class="btn btn-plan btn-plan-popular"
+                    onclick="selectPlan('{{ domain.id if domain else '' }}', 6)">اختر هذه
                     الخطة</button>
             </div>
 
@@ -86,8 +88,30 @@
                     <li>✓ استضافة مع شهادة SSL</li>
                     <li>✓ أولوية في الخدمات</li>
                 </ul>
-                <button class="btn btn-plan" onclick="selectPlan('{{ domain.id if domain else '' }}', 12)">اختر هذه الخطة</button>
+                <button class="btn btn-plan" onclick="selectPlan('{{ domain.id if domain else '' }}', 12)">اختر هذه
+                    الخطة</button>
             </div>
+
+            <!-- custom Plan -->
+            <div class="plan-card">
+                <div class="plan-header">
+                    <h3 class="plan-title">خطة مخصصة</h3>
+                    <div class="plan-duration"> </div>
+                </div>
+                <div class="plan-price">
+                    <span class="price-amount"> حسب الطلب</span>
+                    <span class="price-currency"></span>
+                </div>
+                <ul class="plan-features">
+                    <li>✓ استشارة مجانية</li>
+                    <li>✓ عقود دعم احترافي</li>
+                    <li>✓ حلول خاصة /li>
+                    <li>✓ دعم فني خاص</li>
+                </ul>
+                <button class="btn btn-plan" onclick="selectPlan('{{ domain.id if domain else '' }}', 12)">اختر هذه
+                    الخطة</button>
+            </div>
+
         </div>
     </div>
 </div>
