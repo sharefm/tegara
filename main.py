@@ -525,10 +525,10 @@ async def verify_sms(
 # ============================================================================
 
 @app.get("/login", response_class=HTMLResponse)
-async def login_page(request: Request):
-    # Redirect authenticated users to dashboard
+async def login_page(request: Request, next: str = None):
+    # Redirect authenticated users to dashboard or next
     if request.session.get("authenticated"):
-        return RedirectResponse(url="/dashboard")
+        return RedirectResponse(url=next if next else "/dashboard")
     
     registered = request.query_params.get("registered")
     password_reset = request.query_params.get("password_reset")
@@ -543,7 +543,8 @@ async def login_page(request: Request):
         "login.html",
         {
             "request": request,
-            "success": success_message
+            "success": success_message,
+            "next": next
         }
     )
 
@@ -552,6 +553,7 @@ async def login(
     request: Request,
     mobile_number: str = Form(...),
     password: str = Form(...),
+    next: str = Form(None),
     db: Session = Depends(get_db),
     g_recaptcha_response: str = Form(None, alias="g-recaptcha-response")
 ):
@@ -582,7 +584,11 @@ async def login(
     request.session["user_id"] = user.id
     request.session["mobile_number"] = user.mobile_number
     
-    return RedirectResponse(url="/dashboard", status_code=303)
+    redirect_url = "/dashboard"
+    if next and next.startswith("/"):
+        redirect_url = next
+    
+    return RedirectResponse(url=redirect_url, status_code=303)
 
 # ============================================================================
 # PASSWORD RESET FLOW
@@ -1074,26 +1080,25 @@ async def subscribe_page(
     request: Request,
     db: Session = Depends(get_db)
 ):
-    # Verify authentication
-    if not request.session.get("authenticated"):
-        return RedirectResponse(url="/login")
+    authenticated = request.session.get("authenticated", False)
+    user_id = request.session.get("user_id") if authenticated else None
     
-    user_id = request.session.get("user_id")
-    
-    # Get domain and verify ownership
-    domain = db.query(Domain).filter(
-        Domain.id == domain_id,
-        Domain.user_id == user_id
-    ).first()
+    # Get domain
+    domain = db.query(Domain).filter(Domain.id == domain_id).first()
     
     if not domain:
+        return RedirectResponse(url="/dashboard?error=domain_not_found", status_code=303)
+        
+    # Verify ownership if user is authenticated
+    if authenticated and domain.user_id != user_id:
         return RedirectResponse(url="/dashboard?error=domain_not_found", status_code=303)
     
     return templates.TemplateResponse(
         "subscribe.html",
         {
             "request": request,
-            "domain": domain
+            "domain": domain,
+            "authenticated": authenticated
         }
     )
 

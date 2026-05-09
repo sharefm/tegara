@@ -22,23 +22,6 @@
 
         <!-- Subscription Plans -->
         <div class="subscription-plans">
-            <!-- 1 Month Plan -->
-            <div class="plan-card">
-                <div class="plan-header">
-                    <h3 class="plan-title">اشتراك لشهر</h3>
-                    <div class="plan-duration">شهر واحد</div>
-                </div>
-                <div class="plan-price">
-                    <span class="price-amount">30</span>
-                    <span class="price-currency">شيكل</span>
-                </div>
-                <ul class="plan-features">
-                    <li>✓ عنوان نشط لمدة شهر</li>
-                    <li>✓ توجيه غير محدود</li>
-                    <li>✓ دعم فني</li>
-                </ul>
-                <button class="btn btn-plan" onclick="selectPlan({{ domain.id }}, 1)">اختر هذه الخطة</button>
-            </div>
 
             <!-- 3 Months Plan -->
             <div class="plan-card">
@@ -47,16 +30,17 @@
                     <div class="plan-duration">ثلاثة أشهر</div>
                 </div>
                 <div class="plan-price">
-                    <span class="price-amount">80</span>
+                    <span class="price-amount">100</span>
                     <span class="price-currency">شيكل</span>
                 </div>
                 <ul class="plan-features">
                     <li>✓ عنوان نشط لمدة 3 أشهر</li>
-                    <li>✓ توجيه غير محدود</li>
+                    <li>✓ سياسات جاهزة للمتجر</li>
                     <li>✓ دعم فني</li>
-                    <li>✓ خصم 10%</li>
+                    <li>✓ استضافة مع شهادة SSL</li>
+
                 </ul>
-                <button class="btn btn-plan" onclick="selectPlan({{ domain.id }}, 3)">اختر هذه الخطة</button>
+                <button class="btn btn-plan" onclick="selectPlan('{{ domain.id }}', 3)">اختر هذه الخطة</button>
             </div>
 
             <!-- 6 Months Plan -->
@@ -67,16 +51,17 @@
                     <div class="plan-duration">ستة أشهر</div>
                 </div>
                 <div class="plan-price">
-                    <span class="price-amount">150</span>
+                    <span class="price-amount">180</span>
                     <span class="price-currency">شيكل</span>
                 </div>
                 <ul class="plan-features">
                     <li>✓ عنوان نشط لمدة 6 أشهر</li>
-                    <li>✓ توجيه غير محدود</li>
+                    <li>✓ سياسات جاهزة للمتجر</li>
                     <li>✓ دعم فني متقدم</li>
-                    <li>✓ خصم 15%</li>
+                    <li>✓ استضافة مع شهادة SSL</li>
+
                 </ul>
-                <button class="btn btn-plan btn-plan-popular" onclick="selectPlan({{ domain.id }}, 6)">اختر هذه
+                <button class="btn btn-plan btn-plan-popular" onclick="selectPlan('{{ domain.id }}', 6)">اختر هذه
                     الخطة</button>
             </div>
 
@@ -87,17 +72,17 @@
                     <div class="plan-duration">سنة كاملة</div>
                 </div>
                 <div class="plan-price">
-                    <span class="price-amount">280</span>
+                    <span class="price-amount">320</span>
                     <span class="price-currency">شيكل</span>
                 </div>
                 <ul class="plan-features">
                     <li>✓ عنوان نشط لمدة سنة</li>
-                    <li>✓ توجيه غير محدود</li>
+                    <li>✓ سياسات جاهزة للمتجر</li>
                     <li>✓ دعم فني VIP</li>
-                    <li>✓ خصم 20%</li>
+                    <li>✓ استضافة مع شهادة SSL</li>
                     <li>✓ أولوية في الخدمات</li>
                 </ul>
-                <button class="btn btn-plan" onclick="selectPlan({{ domain.id }}, 12)">اختر هذه الخطة</button>
+                <button class="btn btn-plan" onclick="selectPlan('{{ domain.id }}', 12)">اختر هذه الخطة</button>
             </div>
         </div>
     </div>
@@ -118,7 +103,14 @@
 
 {% block extra_js %}
 <script>
+    var isAuthenticated = {{ 'true' if authenticated else 'false' }};
+
     function selectPlan(domainId, months) {
+        if (!isAuthenticated) {
+            window.location.href = '/login?next=/subscribe/' + domainId;
+            return;
+        }
+
         // Show the WhatsApp QR modal
         document.getElementById('whatsappModal').style.display = 'flex';
         document.body.style.overflow = 'hidden';

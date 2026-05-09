@@ -23,6 +23,9 @@
         {% endif %}
 
         <form method="POST" action="/login" id="loginForm">
+            {% if next %}
+            <input type="hidden" name="next" value="{{ next }}">
+            {% endif %}
             <div class="form-group">
                 <label for="mobile_number">رقم الهاتف</label>
                 <input type="tel" id="mobile_number" name="mobile_number" placeholder="0599123456" required
