@@ -16,6 +16,10 @@
         {% if request.query_params.get('success') == 'domain_added' %}
         <div class="alert alert-success">
             تم إضافة الدومين بنجاح!
+            {% if request.query_params.get('domain') %}
+            <br>
+            <a href="http://{{ request.query_params.get('domain') }}" target="_blank" style="font-weight: bold; text-decoration: underline; color: inherit; margin-top: 5px; display: inline-block;">اضغط هنا لزيارة متجرك الجديد: {{ request.query_params.get('domain') }}</a>
+            {% endif %}
         </div>
         {% elif request.query_params.get('success') == 'domain_deleted' %}
         <div class="alert alert-success">

@@ -918,7 +918,7 @@ async def add_domain(
     else:
         print(f"[ERROR] Failed to setup caddy files for {domain_name}")
     
-    return RedirectResponse(url="/dashboard?success=domain_added", status_code=303)
+    return RedirectResponse(url=f"/dashboard?success=domain_added&domain={domain_name}", status_code=303)
 
 @app.post("/dashboard/delete-domain/{domain_id}")
 async def delete_domain(
