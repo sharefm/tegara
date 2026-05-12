@@ -134,19 +134,29 @@
     var isAuthenticated = {{ 'true' if authenticated else 'false' }};
 
     function selectPlan(domainId, months) {
-        if (!isAuthenticated) {
-            window.location.href = domainId ? ('/login?next=/subscribe/' + domainId) : '/login?next=/dashboard';
-            return;
-        }
+        // Notify the backend about the plan selection
+        fetch('/api/notify-plan-selection', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                domain_id: domainId ? parseInt(domainId) : null,
+                months: months
+            })
+        }).catch(err => console.error(err)).finally(() => {
+            if (!isAuthenticated) {
+                window.location.href = domainId ? ('/login?next=/subscribe/' + domainId) : '/login?next=/dashboard';
+                return;
+            }
 
-        if (!domainId) {
-            window.location.href = '/dashboard';
-            return;
-        }
+            if (!domainId) {
+                window.location.href = '/dashboard';
+                return;
+            }
 
-        // Show the WhatsApp QR modal
-        document.getElementById('whatsappModal').style.display = 'flex';
-        document.body.style.overflow = 'hidden';
+            // Show the WhatsApp QR modal
+            document.getElementById('whatsappModal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        });
     }
 
     function closeWhatsappModal() {

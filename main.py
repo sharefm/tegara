@@ -16,9 +16,25 @@ from config import (
     RECAPTCHA_SITE_KEY, RECAPTCHA_SECRET_KEY, RECAPTCHA_VERIFY_URL, 
     SESSION_SECRET_KEY, ENVIRONMENT, SMS_API_KEY, SMS_API_URL,
     CLOUDFLARE_API_TOKEN, CLOUDFLARE_ZONE_ID, CLOUDFLARE_TARGET_IP,
-    UPDATE_DOMAINS_API_KEY, NGINX_UPDATER_URL
+    UPDATE_DOMAINS_API_KEY, NGINX_UPDATER_URL, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID
 )
 from caddy_manager import setup_domain_files, remove_domain_files, reload_caddy, archive_domain_files
+import json
+
+def send_telegram_alert(message, parse_mode='HTML', silent=False):
+    if not TELEGRAM_TOKEN or not TELEGRAM_CHAT_ID:
+        return
+    url = f'https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage'
+    payload = {
+        'chat_id': TELEGRAM_CHAT_ID,
+        'text': message,
+        'parse_mode': parse_mode,
+        'disable_notification': silent
+    }
+    try:
+        requests.post(url, json=payload, timeout=5)
+    except Exception as e:
+        print(f"Telegram alert failed: {e}")
 
 app = FastAPI()
 
@@ -513,6 +529,14 @@ async def verify_sms(
     
     db.commit()
     
+    # Send Telegram alert for new registration
+    alert_data = {
+        "event": "New User Registration",
+        "phone": mobile_number
+    }
+    alert_message = f"<pre>{json.dumps(alert_data, indent=2, ensure_ascii=False)}</pre>"
+    send_telegram_alert(alert_message)
+    
     # Clear pending session data
     request.session.pop("pending_mobile", None)
     request.session.pop("pending_password", None)
@@ -918,6 +942,20 @@ async def add_domain(
     else:
         print(f"[ERROR] Failed to setup caddy files for {domain_name}")
     
+    domain_info = {
+        'event': 'New Domain Added',
+        'phone': phone,
+        'store_name': final_store_name,
+        'domain': domain_name,
+        'urls': {
+            'facebook': normalized_fb,
+            'instagram': normalized_ig,
+            'tiktok': normalized_tt
+        }
+    }
+    alert_message = f"<pre>{json.dumps(domain_info, indent=2, ensure_ascii=False)}</pre>"
+    send_telegram_alert(alert_message)
+    
     return RedirectResponse(url=f"/dashboard?success=domain_added&domain={domain_name}", status_code=303)
 
 @app.post("/dashboard/delete-domain/{domain_id}")
@@ -1075,8 +1113,26 @@ async def edit_domain(
     return RedirectResponse(url="/dashboard?success=domain_updated", status_code=303)
 
 @app.get("/subscribe", response_class=HTMLResponse)
-async def subscribe_general_page(request: Request):
+async def subscribe_general_page(request: Request, db: Session = Depends(get_db)):
     authenticated = request.session.get("authenticated", False)
+    
+    # Send Telegram alert
+    client_ip = request.headers.get("X-Forwarded-For", request.client.host if request.client else "unknown")
+    phone = "unauthenticated"
+    if authenticated:
+        user_id = request.session.get("user_id")
+        user = db.query(User).filter(User.id == user_id).first()
+        if user:
+            phone = user.mobile_number
+            
+    alert_info = {
+        'event': 'Reached Subscribe Page',
+        'phone': phone,
+        'ip_address': client_ip
+    }
+    alert_message = f"<pre>{json.dumps(alert_info, indent=2, ensure_ascii=False)}</pre>"
+    send_telegram_alert(alert_message)
+
     return templates.TemplateResponse(
         "subscribe.html",
         {
@@ -1093,6 +1149,37 @@ async def subscribe_domain_page(
     db: Session = Depends(get_db)
 ):
     authenticated = request.session.get("authenticated", False)
+    client_ip = request.headers.get("X-Forwarded-For", request.client.host if request.client else "unknown")
+    user_phone = "unauthenticated"
+    
+    if authenticated:
+        user_id = request.session.get("user_id")
+        user = db.query(User).filter(User.id == user_id).first()
+        if user:
+            user_phone = user.mobile_number
+
+    # Send Telegram alert before redirecting if unauthenticated
+    domain_data = {}
+    domain = db.query(Domain).filter(Domain.id == domain_id).first()
+    if domain:
+        domain_data = {
+            'store_name': domain.store_name,
+            'domain': domain.domain_name,
+            'urls': {
+                'facebook': domain.facebook_url,
+                'instagram': domain.instagram_url,
+                'tiktok': domain.tiktok_url
+            }
+        }
+    
+    alert_info = {
+        'event': 'Reached Subscribe Page for Domain',
+        'phone': user_phone,
+        'ip_address': client_ip,
+        **domain_data
+    }
+    alert_message = f"<pre>{json.dumps(alert_info, indent=2, ensure_ascii=False)}</pre>"
+    send_telegram_alert(alert_message)
     
     if not authenticated:
         return RedirectResponse(url=f"/login?next=/subscribe/{domain_id}", status_code=303)
@@ -1116,6 +1203,51 @@ async def subscribe_domain_page(
             "authenticated": authenticated
         }
     )
+
+@app.post("/api/notify-plan-selection")
+async def notify_plan_selection(request: Request, db: Session = Depends(get_db)):
+    try:
+        data = await request.json()
+    except:
+        data = {}
+        
+    domain_id = data.get("domain_id")
+    months = data.get("months")
+    
+    client_ip = request.headers.get("X-Forwarded-For", request.client.host if request.client else "unknown")
+    phone = "unauthenticated"
+    user_id = request.session.get("user_id")
+    
+    if user_id:
+        user = db.query(User).filter(User.id == user_id).first()
+        if user:
+            phone = user.mobile_number
+
+    domain_data = {}
+    if domain_id:
+        domain = db.query(Domain).filter(Domain.id == int(domain_id)).first()
+        if domain:
+            domain_data = {
+                'store_name': domain.store_name,
+                'domain': domain.domain_name,
+                'urls': {
+                    'facebook': domain.facebook_url,
+                    'instagram': domain.instagram_url,
+                    'tiktok': domain.tiktok_url
+                }
+            }
+
+    alert_info = {
+        'event': 'Plan Selected',
+        'plan_months': months,
+        'phone': phone,
+        'ip_address': client_ip,
+        **domain_data
+    }
+    alert_message = f"<pre>{json.dumps(alert_info, indent=2, ensure_ascii=False)}</pre>"
+    send_telegram_alert(alert_message)
+    
+    return {"status": "ok"}
 
 @app.get("/logout")
 async def logout(request: Request):

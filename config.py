@@ -93,3 +93,7 @@ ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "")
 
 # Cron job secret — used to authenticate calls to /cron
 CRON_SECRET = os.getenv("CRON_SECRET", "")
+
+# Telegram Bot Credentials
+TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN", "")
+TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
