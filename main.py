@@ -18,7 +18,7 @@ from config import (
     CLOUDFLARE_API_TOKEN, CLOUDFLARE_ZONE_ID, CLOUDFLARE_TARGET_IP,
     UPDATE_DOMAINS_API_KEY, NGINX_UPDATER_URL
 )
-from caddy_manager import setup_domain_files, remove_domain_files, reload_caddy
+from caddy_manager import setup_domain_files, remove_domain_files, reload_caddy, archive_domain_files
 
 app = FastAPI()
 
@@ -1391,9 +1391,17 @@ async def cron_job(request: Request, db: Session = Depends(get_db)):
         .all()
     )
     expired_count = len(expired)
+    archived_any = False
     for domain in expired:
         domain.subscription_status = "expired"
         domain.is_active = 0
+        
+        # Archive the caddy config and html files
+        if archive_domain_files(domain.domain_name):
+            archived_any = True
+
+    if archived_any:
+        reload_caddy()
 
     # 2. Delete OTP sessions older than 24 hours
     deleted_otp = (

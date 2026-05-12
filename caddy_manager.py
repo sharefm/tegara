@@ -144,3 +144,37 @@ def remove_domain_files(domain: str) -> bool:
     except Exception as e:
         logger.error(f"Error removing files for {domain}: {e}")
         return False
+
+def archive_domain_files(domain: str) -> bool:
+    if not domain or '..' in domain or '/' in domain:
+        logger.error("Invalid domain name")
+        return False
+
+    hosting_dir = f"/app/hosting/{domain}"
+    vhosts_dir = "/app/vhosts"
+    archived_hosting_dir = "/app/archived_hosting"
+    archived_vhosts_dir = "/app/archived_vhosts"
+    
+    is_subdomain = domain.endswith(".tejara.ps")
+    caddyfile_name = f"{domain}_{'subdomain' if is_subdomain else 'custom'}.caddyfile"
+    caddyfile_path = f"{vhosts_dir}/{caddyfile_name}"
+    archived_caddyfile_path = f"{archived_vhosts_dir}/{caddyfile_name}"
+
+    os.makedirs(archived_hosting_dir, exist_ok=True)
+    os.makedirs(archived_vhosts_dir, exist_ok=True)
+
+    try:
+        if os.path.exists(hosting_dir):
+            if os.path.exists(f"{archived_hosting_dir}/{domain}"):
+                shutil.rmtree(f"{archived_hosting_dir}/{domain}")
+            shutil.move(hosting_dir, f"{archived_hosting_dir}/{domain}")
+            
+        if os.path.exists(caddyfile_path):
+            if os.path.exists(archived_caddyfile_path):
+                os.remove(archived_caddyfile_path)
+            shutil.move(caddyfile_path, archived_caddyfile_path)
+            
+        return True
+    except Exception as e:
+        logger.error(f"Error archiving files for {domain}: {e}")
+        return False
