@@ -138,9 +138,12 @@
             {% for domain in domains %}
             <div class="domain-item">
                 <div class="domain-info">
-                    <a href="http://{{ domain.domain_name }}" target="_blank" class="domain-name domain-link" style="display: block; text-align: center; font-size: 1.6rem; font-weight: 800; background: #f0f9ff; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 2px dashed #3b82f6; color: #1d4ed8; text-decoration: none; transition: all 0.3s ease; box-shadow: 0 4px 6px rgba(59, 130, 246, 0.1);">
-                        {{ domain.domain_name }}
-                    </a>
+                    <div style="margin-bottom: 16px;">
+                        <a href="http://{{ domain.domain_name }}" target="_blank" class="domain-link" style="display: inline-flex; align-items: center; gap: 8px; font-size: 1.3rem; font-weight: 700; background: #ffffff; padding: 10px 20px; border-radius: 10px; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.05); color: #0f172a; text-decoration: none; transition: transform 0.2s, box-shadow 0.2s;">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                            <span style="direction: ltr;">{{ domain.domain_name }}</span>
+                        </a>
+                    </div>
                     <div class="domain-meta">
                         <div class="domain-badges">
                             <div class="domain-type">
