@@ -138,8 +138,9 @@
             {% for domain in domains %}
             <div class="domain-item">
                 <div class="domain-info">
-                    <a href="http://{{ domain.domain_name }}" target="_blank" class="domain-name domain-link">{{
-                        domain.domain_name }}</a>
+                    <a href="http://{{ domain.domain_name }}" target="_blank" class="domain-name domain-link" style="display: block; text-align: center; font-size: 1.6rem; font-weight: 800; background: #f0f9ff; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 2px dashed #3b82f6; color: #1d4ed8; text-decoration: none; transition: all 0.3s ease; box-shadow: 0 4px 6px rgba(59, 130, 246, 0.1);">
+                        {{ domain.domain_name }}
+                    </a>
                     <div class="domain-meta">
                         <div class="domain-badges">
                             <div class="domain-type">
